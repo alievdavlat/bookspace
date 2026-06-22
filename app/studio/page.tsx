@@ -29,8 +29,11 @@ export default async function StudioPage() {
         <Button render={<Link href="/studio/book/new" />} nativeButton={false}>
           Upload a book
         </Button>
-        <Button variant="outline" disabled>
-          Write online (soon)
+        <Button render={<Link href="/studio/write/new" />} nativeButton={false} variant="outline">
+          Write a book online
+        </Button>
+        <Button render={<Link href="/studio/blog/new" />} nativeButton={false} variant="outline">
+          Write a blog post
         </Button>
       </div>
 
