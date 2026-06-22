@@ -52,10 +52,10 @@ export default function Home() {
               online, and build a community of fellow readers.
             </p>
             <div className="flex flex-wrap items-center gap-3">
-              <Button render={<Link href="/explore" />} size="lg">
+              <Button render={<Link href="/explore" />} nativeButton={false} size="lg">
                 Explore books
               </Button>
-              <Button render={<Link href="/sign-up" />} size="lg" variant="outline">
+              <Button render={<Link href="/sign-up" />} nativeButton={false} size="lg" variant="outline">
                 ▶ Get started
               </Button>
             </div>
@@ -147,7 +147,7 @@ export default function Home() {
             Your next chapter starts here
           </h2>
           <div className="mt-8">
-            <Button render={<Link href="/sign-up" />} size="lg">
+            <Button render={<Link href="/sign-up" />} nativeButton={false} size="lg">
               Get started — it&apos;s free
             </Button>
           </div>

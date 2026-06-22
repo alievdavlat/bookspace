@@ -45,6 +45,7 @@ export default async function DashboardPage() {
               <p className="mt-2 flex-1 text-sm text-muted-foreground">{c.body}</p>
               <Button
                 render={<Link href={c.href} />}
+                nativeButton={false}
                 variant="outline"
                 size="sm"
                 className="mt-4 self-start"

@@ -51,10 +51,10 @@ export async function SiteHeader() {
             <UserMenu profile={profile} />
           ) : (
             <>
-              <Button render={<Link href="/sign-in" />} variant="ghost" size="sm">
+              <Button render={<Link href="/sign-in" />} nativeButton={false} variant="ghost" size="sm">
                 Log in
               </Button>
-              <Button render={<Link href="/sign-up" />} size="sm">
+              <Button render={<Link href="/sign-up" />} nativeButton={false} size="sm">
                 Register
               </Button>
             </>
