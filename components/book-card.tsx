@@ -3,7 +3,7 @@ import type { BookWithAuthor } from "@/lib/types";
 
 export function BookCard({ book }: { book: BookWithAuthor }) {
   const author =
-    book.author?.display_name || book.author?.username || "Unknown";
+    book.author_name || book.author?.display_name || book.author?.username || "Unknown";
   return (
     <Link href={`/book/${book.slug}`} className="group block">
       <div className="bs-cover aspect-[2/3] overflow-hidden rounded-lg border border-border bg-secondary shadow-sm">

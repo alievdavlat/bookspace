@@ -28,14 +28,15 @@ export default async function BookPage({
   const { data } = await supabase
     .from("books")
     .select(
-      "id, author_id, title, slug, description, cover_url, language, genres, type, format, status, visibility, page_count, views, created_at, author:profiles!books_author_id_fkey(username, display_name)"
+      "id, author_id, title, slug, author_name, description, cover_url, language, genres, type, format, status, visibility, page_count, views, created_at, author:profiles!books_author_id_fkey(username, display_name)"
     )
     .eq("slug", slug)
     .single();
 
   if (!data) notFound();
   const book = data as unknown as BookWithAuthor;
-  const author = book.author?.display_name || book.author?.username || "Unknown";
+  const author =
+    book.author_name || book.author?.display_name || book.author?.username || "Unknown";
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -59,7 +60,9 @@ export default async function BookPage({
             <h1 className="font-serif text-4xl font-semibold">{book.title}</h1>
             <p className="mt-2 text-muted-foreground">
               by{" "}
-              {book.author?.username ? (
+              {book.author_name ? (
+                author
+              ) : book.author?.username ? (
                 <Link href={`/author/${book.author.username}`} className="text-primary hover:underline">
                   {author}
                 </Link>

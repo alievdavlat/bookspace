@@ -31,7 +31,7 @@ export default async function ExplorePage({
   let query = supabase
     .from("books")
     .select(
-      "id, author_id, title, slug, description, cover_url, language, genres, type, format, status, visibility, page_count, views, created_at, author:profiles!books_author_id_fkey(username, display_name)"
+      "id, author_id, title, slug, author_name, description, cover_url, language, genres, type, format, status, visibility, page_count, views, created_at, author:profiles!books_author_id_fkey(username, display_name)"
     )
     .eq("status", "published")
     .eq("visibility", "public");

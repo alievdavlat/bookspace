@@ -4,6 +4,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { GENRES } from "@/lib/types";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const LANGUAGES = [
   { v: "en", l: "English" },
@@ -70,34 +78,35 @@ export function ExploreSidebar() {
       </form>
 
       <Group title="Sort by">
-        <select
-          value={sp.get("sort") ?? "new"}
-          onChange={(e) => setSingle("sort", e.target.value)}
-          className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-        >
-          {SORTS.map((s) => (
-            <option key={s.v} value={s.v}>
-              {s.l}
-            </option>
-          ))}
-        </select>
+        <Select value={sp.get("sort") ?? "new"} onValueChange={(v) => setSingle("sort", String(v))}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SORTS.map((s) => (
+              <SelectItem key={s.v} value={s.v}>
+                {s.l}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </Group>
 
       <Group title="Genre">
         {GENRES.map((g) => (
-          <Check key={g} label={g} on={checked("genre", g)} onClick={() => toggle("genre", g)} />
+          <Check key={g} label={g} on={checked("genre", g)} onToggle={() => toggle("genre", g)} />
         ))}
       </Group>
 
       <Group title="Language">
         {LANGUAGES.map((l) => (
-          <Check key={l.v} label={l.l} on={checked("lang", l.v)} onClick={() => toggle("lang", l.v)} />
+          <Check key={l.v} label={l.l} on={checked("lang", l.v)} onToggle={() => toggle("lang", l.v)} />
         ))}
       </Group>
 
       <Group title="Format">
         {FORMATS.map((f) => (
-          <Check key={f.v} label={f.l} on={checked("format", f.v)} onClick={() => toggle("format", f.v)} />
+          <Check key={f.v} label={f.l} on={checked("format", f.v)} onToggle={() => toggle("format", f.v)} />
         ))}
       </Group>
     </aside>
@@ -107,16 +116,24 @@ export function ExploreSidebar() {
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="mb-2.5 text-sm font-semibold">{title}</h3>
-      <div className="space-y-2">{children}</div>
+      <h3 className="mb-3 text-sm font-semibold">{title}</h3>
+      <div className="space-y-2.5">{children}</div>
     </div>
   );
 }
 
-function Check({ label, on, onClick }: { label: string; on: boolean; onClick: () => void }) {
+function Check({
+  label,
+  on,
+  onToggle,
+}: {
+  label: string;
+  on: boolean;
+  onToggle: () => void;
+}) {
   return (
-    <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-      <input type="checkbox" checked={on} onChange={onClick} className="accent-primary" />
+    <label className="flex cursor-pointer items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground">
+      <Checkbox checked={on} onCheckedChange={onToggle} />
       {label}
     </label>
   );

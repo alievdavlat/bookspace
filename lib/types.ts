@@ -8,6 +8,7 @@ export type Book = {
   author_id: string;
   title: string;
   slug: string;
+  author_name: string | null;
   description: string | null;
   cover_url: string | null;
   language: string | null;
