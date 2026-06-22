@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { ReadAloud } from "@/components/read-aloud";
 
 export async function generateMetadata({
   params,
@@ -41,6 +42,7 @@ export default async function BlogPostPage({
   if (!data) notFound();
   const post = data as unknown as Post;
   const author = post.author?.display_name || post.author?.username || "Unknown";
+  const plainText = (post.content?.html ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -50,10 +52,13 @@ export default async function BlogPostPage({
           ← All posts
         </Link>
         <h1 className="mt-4 font-serif text-4xl font-semibold">{post.title}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {author}
-          {post.published_at ? ` · ${new Date(post.published_at).toLocaleDateString()}` : ""}
-        </p>
+        <div className="mt-2 flex items-center justify-between gap-4">
+          <p className="text-sm text-muted-foreground">
+            {author}
+            {post.published_at ? ` · ${new Date(post.published_at).toLocaleDateString()}` : ""}
+          </p>
+          <ReadAloud text={plainText} />
+        </div>
         <article
           className="prose prose-stone dark:prose-invert mt-8 max-w-none"
           dangerouslySetInnerHTML={{ __html: post.content?.html ?? "" }}

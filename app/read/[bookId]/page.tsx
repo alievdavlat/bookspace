@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { BookReader } from "@/components/reader/book-reader";
+import { ReadAloud } from "@/components/read-aloud";
 
 export const metadata: Metadata = { title: "Reader · Bookspace" };
 
@@ -34,6 +35,13 @@ export default async function ReadPage({
       .eq("book_id", book.id)
       .order("order", { ascending: true });
 
+    const plainText = (chapters ?? [])
+      .map((ch) => (ch.content as { html?: string })?.html ?? "")
+      .join(" ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
     return (
       <div className="flex min-h-screen flex-col bg-[#f7edd8] text-[#3a2c18]">
         <div className="flex items-center justify-between px-5 py-3 text-sm">
@@ -41,7 +49,7 @@ export default async function ReadPage({
             ← Back
           </Link>
           <span className="font-serif">{book.title}</span>
-          <span />
+          <ReadAloud text={plainText} />
         </div>
         <article className="prose prose-stone mx-auto w-full max-w-2xl flex-1 px-6 py-10">
           <h1 className="font-serif">{book.title}</h1>
