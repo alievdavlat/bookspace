@@ -5,7 +5,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -41,12 +40,12 @@ export function UserMenu({ profile }: { profile: MenuProfile }) {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="flex flex-col">
-          <span className="font-medium">{name}</span>
+        <div className="flex flex-col px-2 py-1.5">
+          <span className="text-sm font-medium">{name}</span>
           {profile.username ? (
             <span className="text-xs text-muted-foreground">@{profile.username}</span>
           ) : null}
-        </DropdownMenuLabel>
+        </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem render={<Link href="/dashboard" />}>Dashboard</DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/library" />}>My library</DropdownMenuItem>
