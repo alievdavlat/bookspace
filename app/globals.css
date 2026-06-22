@@ -140,3 +140,17 @@
     font-family: var(--font-serif);
   }
 }
+
+/* Landing animations */
+@keyframes bsAurora {
+  0% { transform: translate(-10%, -6%) rotate(0deg); }
+  50% { transform: translate(8%, 6%) rotate(8deg); }
+  100% { transform: translate(-10%, -6%) rotate(0deg); }
+}
+@keyframes bsFloat {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+  100% { transform: translateY(0); }
+}
+.bs-aurora { animation: bsAurora 18s ease-in-out infinite; }
+.bs-float { animation: bsFloat 6s ease-in-out infinite; }
