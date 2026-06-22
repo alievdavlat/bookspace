@@ -40,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# internal docs / planning — keep local, not on GitHub (only README is published)
+docs/
+Bookspace-PROGRESS.md
+design-ref/
+*.zip
