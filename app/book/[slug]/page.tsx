@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
+import { AddToShelf } from "@/components/book/add-to-shelf";
+import { ReviewSection, type ReviewItem } from "@/components/book/review-section";
 import type { BookWithAuthor } from "@/lib/types";
 
 export async function generateMetadata({
@@ -37,6 +39,20 @@ export default async function BookPage({
   const book = data as unknown as BookWithAuthor;
   const author =
     book.author_name || book.author?.display_name || book.author?.username || "Unknown";
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: reviewData } = await supabase
+    .from("reviews")
+    .select("rating, body, created_at, user:profiles!reviews_user_id_fkey(username, display_name)")
+    .eq("book_id", book.id)
+    .order("created_at", { ascending: false });
+  const reviews = (reviewData ?? []) as unknown as ReviewItem[];
+  const avg = reviews.length
+    ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
+    : null;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -89,10 +105,13 @@ export default async function BookPage({
               <Button render={<Link href={`/read/${book.id}`} />} nativeButton={false} size="lg">
                 Read
               </Button>
-              <Button variant="outline" size="lg" disabled>
-                Add to shelf
-              </Button>
             </div>
+
+            {user ? (
+              <div className="mt-4">
+                <AddToShelf bookId={book.id} />
+              </div>
+            ) : null}
 
             <p className="mt-8 leading-relaxed text-foreground/90">{book.description}</p>
 
@@ -106,6 +125,14 @@ export default async function BookPage({
             </dl>
           </div>
         </div>
+
+        <ReviewSection
+          bookId={book.id}
+          slug={book.slug}
+          reviews={reviews}
+          avg={avg}
+          canReview={!!user}
+        />
       </main>
       <SiteFooter />
     </div>
