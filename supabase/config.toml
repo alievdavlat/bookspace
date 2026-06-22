@@ -1,0 +1,4 @@
+# Minimal Supabase config. Run `npx supabase link --project-ref <ref>` then
+# `npx supabase db push` to apply migrations once the `bookspace` project exists.
+# Alternatively paste the SQL from migrations/ into the Supabase SQL editor in order.
+project_id = "bookspace"
