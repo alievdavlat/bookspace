@@ -1,92 +1,94 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { PageShell } from "@/components/page-shell";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import { BookCard } from "@/components/book-card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { GENRES, type BookWithAuthor } from "@/lib/types";
+import { ExploreSidebar } from "@/components/explore/explore-sidebar";
+import { ActiveFilters } from "@/components/explore/active-filters";
+import type { BookWithAuthor } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Explore · Bookspace" };
+
+function toArray(v: string | string[] | undefined): string[] {
+  if (!v) return [];
+  return Array.isArray(v) ? v : [v];
+}
 
 export default async function ExplorePage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; genre?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { q, genre } = await searchParams;
-  const supabase = await createClient();
+  const params = await searchParams;
+  const q = typeof params.q === "string" ? params.q : "";
+  const genres = toArray(params.genre);
+  const langs = toArray(params.lang);
+  const formats = toArray(params.format);
+  const sort = typeof params.sort === "string" ? params.sort : "new";
 
+  const supabase = await createClient();
   let query = supabase
     .from("books")
     .select(
       "id, author_id, title, slug, description, cover_url, language, genres, type, format, status, visibility, page_count, views, created_at, author:profiles!books_author_id_fkey(username, display_name)"
     )
     .eq("status", "published")
-    .eq("visibility", "public")
-    .order("created_at", { ascending: false });
+    .eq("visibility", "public");
 
   if (q) query = query.ilike("title", `%${q}%`);
-  if (genre) query = query.contains("genres", [genre]);
+  if (genres.length) query = query.overlaps("genres", genres);
+  if (langs.length) query = query.in("language", langs);
+  if (formats.length) query = query.in("format", formats);
+
+  if (sort === "title") query = query.order("title", { ascending: true });
+  else if (sort === "popular") query = query.order("views", { ascending: false });
+  else query = query.order("created_at", { ascending: false });
 
   const { data } = await query;
   const books = (data ?? []) as unknown as BookWithAuthor[];
 
   return (
-    <PageShell
-      title="Explore"
-      subtitle="Discover your next read across the community library."
-    >
-      {/* Search */}
-      <form className="mt-8 flex max-w-md gap-2" action="/explore">
-        <Input
-          name="q"
-          defaultValue={q ?? ""}
-          placeholder="Search titles…"
-          aria-label="Search titles"
-        />
-        <Button type="submit">Search</Button>
-      </form>
-
-      {/* Genre filter */}
-      <div className="mt-5 flex flex-wrap gap-2">
-        <Link
-          href="/explore"
-          className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-            !genre
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-border hover:bg-secondary"
-          }`}
-        >
-          All
-        </Link>
-        {GENRES.map((g) => (
-          <Link
-            key={g}
-            href={`/explore?genre=${g}`}
-            className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-              genre === g
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border hover:bg-secondary"
-            }`}
-          >
-            {g}
-          </Link>
-        ))}
-      </div>
-
-      {/* Grid */}
-      {books.length === 0 ? (
-        <p className="mt-12 text-muted-foreground">
-          No books found{q ? ` for “${q}”` : ""}. Try another search or genre.
+    <div className="flex min-h-screen flex-col">
+      <SiteHeader />
+      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
+        <h1 className="font-serif text-4xl font-semibold">Explore</h1>
+        <p className="mt-2 text-muted-foreground">
+          {books.length} {books.length === 1 ? "book" : "books"} in the community library
         </p>
-      ) : (
-        <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
-          {books.map((book) => (
-            <BookCard key={book.id} book={book} />
-          ))}
+
+        <div className="mt-10 grid gap-10 lg:grid-cols-[250px_1fr]">
+          {/* Filters */}
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <Suspense fallback={<div className="text-sm text-muted-foreground">Loading filters…</div>}>
+              <ExploreSidebar />
+            </Suspense>
+          </div>
+
+          {/* Results */}
+          <div>
+            <Suspense fallback={null}>
+              <ActiveFilters />
+            </Suspense>
+
+            {books.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-border bg-secondary/30 p-12 text-center">
+                <p className="font-serif text-2xl">No books match</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Try clearing some filters — or upload the first book from your Studio.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3">
+                {books.map((book) => (
+                  <BookCard key={book.id} book={book} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      )}
-    </PageShell>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }
