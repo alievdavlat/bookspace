@@ -80,7 +80,9 @@ export function ExploreSidebar() {
       <Group title="Sort by">
         <Select value={sp.get("sort") ?? "new"} onValueChange={(v) => setSingle("sort", String(v))}>
           <SelectTrigger className="w-full">
-            <SelectValue />
+            <SelectValue>
+              {(value: string) => SORTS.find((s) => s.v === value)?.l ?? "Newest"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {SORTS.map((s) => (
