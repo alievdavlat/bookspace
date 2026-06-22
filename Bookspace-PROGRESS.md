@@ -22,11 +22,14 @@
   - Framer Motion (Aceternity base)
   - Supabase migrations written: `0001_init_schema`, `0002_rls_storage`, `0003_profile_trigger`
 
-## Infra status ⚠️
-- **Supabase `bookspace` project: NOT created yet.** Migrations are written but **NOT pushed**.
-  - TODO (user): create project, put URL + anon + service_role into `.env.local`,
-    then `npx supabase link --project-ref <ref> && npx supabase db push`.
-- speaking-app's `speaking-ai` Supabase is a DIFFERENT project — do not reuse.
+## Infra status ✅ LIVE
+- **Supabase `bookspace` project CREATED & MIGRATED** (2026-06-22, via Composio).
+  - ref: `vefdsejekfzvfwquhkfm` · region `eu-central-1` · org `apywfkqyykobfkzkbxus` · ACTIVE_HEALTHY
+  - URL: `https://vefdsejekfzvfwquhkfm.supabase.co`
+  - All 3 migrations applied → **14 tables** in `public`, RLS enabled, storage buckets
+    (book-files/covers/avatars), profile-on-signup trigger live.
+  - Keys + DB password are in `.env.local` (gitignored). DB password: stored there only.
+- Managed via **Composio** Supabase connection (org also holds `speaking-ai` — a DIFFERENT project).
 
 ## Next
 1. Create + connect the `bookspace` Supabase project; push migrations; verify auth signup creates a profile.
