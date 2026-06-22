@@ -5,12 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  signIn,
-  signUp,
-  signInWithGoogle,
-  type AuthState,
-} from "@/lib/actions/auth";
+import { signIn, signUp, type AuthState } from "@/lib/actions/auth";
 
 const initial: AuthState = {};
 
@@ -26,17 +21,6 @@ export function AuthForm({
 
   return (
     <div className="w-full max-w-sm">
-      <form action={signInWithGoogle} className="mb-4">
-        <Button type="submit" variant="outline" className="w-full">
-          Continue with Google
-        </Button>
-      </form>
-
-      <div className="relative my-4 text-center text-xs text-muted-foreground">
-        <span className="relative z-10 bg-background px-2">or with email</span>
-        <span className="absolute inset-x-0 top-1/2 h-px bg-border" />
-      </div>
-
       <form action={formAction} className="flex flex-col gap-4">
         <input type="hidden" name="redirect" value={redirectTo} />
 
