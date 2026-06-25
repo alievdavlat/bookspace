@@ -1,14 +1,27 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, X } from "lucide-react";
+import { Search } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { createClient } from "@/lib/supabase/client";
 
-type Result =
-  | { kind: "book"; id: string; title: string; href: string; sub: string | null; cover: string | null }
-  | { kind: "person"; id: string; title: string; href: string; sub: string | null; cover: string | null }
-  | { kind: "blog"; id: string; title: string; href: string; sub: string | null; cover: string | null };
+type Result = {
+  kind: "book" | "person" | "blog";
+  id: string;
+  title: string;
+  href: string;
+  sub: string | null;
+  cover: string | null;
+};
 
 export function SearchCommand() {
   const router = useRouter();
@@ -16,16 +29,12 @@ export function SearchCommand() {
   const [q, setQ] = useState("");
   const [results, setResults] = useState<Result[]>([]);
   const [loading, setLoading] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  // ⌘K / Ctrl+K to open, Esc to close.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setOpen((v) => !v);
-      } else if (e.key === "Escape") {
-        setOpen(false);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -33,8 +42,7 @@ export function SearchCommand() {
   }, []);
 
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 30);
-    else {
+    if (!open) {
       setQ("");
       setResults([]);
     }
@@ -117,72 +125,49 @@ export function SearchCommand() {
         <kbd className="hidden rounded border border-border px-1 text-[10px] sm:inline">⌘K</kbd>
       </button>
 
-      {open ? (
-        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-[12vh]">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <div className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-border bg-popover shadow-2xl">
-            <div className="flex items-center gap-3 border-b border-border px-4">
-              <Search className="size-4 shrink-0 text-muted-foreground" />
-              <input
-                ref={inputRef}
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search books, people, posts…"
-                className="w-full bg-transparent py-4 text-sm outline-none placeholder:text-muted-foreground"
-              />
-              <button onClick={() => setOpen(false)} aria-label="Close" className="text-muted-foreground hover:text-foreground">
-                <X className="size-4" />
-              </button>
-            </div>
-
-            <div className="max-h-[50vh] overflow-y-auto p-2">
-              {q.trim().length < 2 ? (
-                <p className="px-3 py-8 text-center text-sm text-muted-foreground">
-                  Type at least 2 characters to search.
-                </p>
-              ) : loading && results.length === 0 ? (
-                <p className="px-3 py-8 text-center text-sm text-muted-foreground">Searching…</p>
-              ) : results.length === 0 ? (
-                <p className="px-3 py-8 text-center text-sm text-muted-foreground">No results for “{q}”.</p>
-              ) : (
-                groups.map((g) => {
-                  const items = results.filter((r) => r.kind === g.kind);
-                  if (!items.length) return null;
-                  return (
-                    <div key={g.kind} className="mb-2">
-                      <p className="px-3 py-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        {g.label}
-                      </p>
-                      {items.map((r) => (
-                        <button
-                          key={r.id}
-                          onClick={() => go(r.href)}
-                          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-secondary"
-                        >
-                          {r.cover ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={r.cover} alt="" className="size-8 shrink-0 rounded object-cover" />
-                          ) : (
-                            <span className="grid size-8 shrink-0 place-items-center rounded bg-secondary text-xs">
-                              {g.label[0]}
-                            </span>
-                          )}
-                          <span className="min-w-0">
-                            <span className="block truncate text-sm">{r.title}</span>
-                            {r.sub ? (
-                              <span className="block truncate text-xs text-muted-foreground">{r.sub}</span>
-                            ) : null}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent
+          showCloseButton={false}
+          className="top-1/4 max-w-xl translate-y-0 overflow-hidden rounded-2xl p-0"
+        >
+          <DialogTitle className="sr-only">Search Bookspace</DialogTitle>
+          <Command shouldFilter={false}>
+            <CommandInput value={q} onValueChange={setQ} placeholder="Search books, people, posts…" />
+            <CommandList>
+          {q.trim().length < 2 ? (
+            <CommandEmpty>Type at least 2 characters to search.</CommandEmpty>
+          ) : results.length === 0 ? (
+            <CommandEmpty>{loading ? "Searching…" : `No results for “${q}”.`}</CommandEmpty>
+          ) : (
+            groups.map((g) => {
+              const items = results.filter((r) => r.kind === g.kind);
+              if (!items.length) return null;
+              return (
+                <CommandGroup key={g.kind} heading={g.label}>
+                  {items.map((r) => (
+                    <CommandItem key={r.id} value={`${r.kind}-${r.id}`} onSelect={() => go(r.href)}>
+                      {r.cover ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={r.cover} alt="" className="size-7 shrink-0 rounded object-cover" />
+                      ) : (
+                        <span className="grid size-7 shrink-0 place-items-center rounded bg-secondary text-xs">
+                          {g.label[0]}
+                        </span>
+                      )}
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm">{r.title}</span>
+                        {r.sub ? <span className="block truncate text-xs text-muted-foreground">{r.sub}</span> : null}
+                      </span>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              );
+              })
+            )}
+            </CommandList>
+          </Command>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
-import { StudioSidebar } from "@/components/studio/studio-sidebar";
+import { SidebarShell } from "@/components/sidebar-shell";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { SearchCommand } from "@/components/search/search-command";
+import { UserMenu, type MenuProfile } from "@/components/user-menu";
 
 export default async function StudioLayout({
   children,
@@ -15,17 +16,31 @@ export default async function StudioLayout({
   } = await supabase.auth.getUser();
   if (!user) redirect("/sign-in?redirect=/studio");
 
+  const { data } = await supabase
+    .from("profiles")
+    .select("username, display_name, avatar_url, role")
+    .eq("id", user.id)
+    .single();
+  const profile: MenuProfile = data ?? {
+    username: null,
+    display_name: null,
+    avatar_url: null,
+    role: null,
+  };
+
   return (
-    <div className="flex min-h-screen flex-col">
-      <SiteHeader />
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10 md:flex-row">
-        <aside className="md:w-52 md:shrink-0">
-          <p className="mb-3 font-serif text-lg font-semibold">Studio</p>
-          <StudioSidebar />
-        </aside>
-        <main className="min-w-0 flex-1">{children}</main>
-      </div>
-      <SiteFooter />
-    </div>
+    <SidebarShell
+      area="studio"
+      label="Studio"
+      topRight={
+        <>
+          <SearchCommand />
+          <ThemeToggle />
+          <UserMenu profile={profile} />
+        </>
+      }
+    >
+      {children}
+    </SidebarShell>
   );
 }
