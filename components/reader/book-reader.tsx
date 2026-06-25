@@ -1,11 +1,17 @@
 "use client";
 
+import type { ForwardRefExoticComponent, ReactNode, Ref } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-// @ts-expect-error - react-pageflip ships loose types
-import HTMLFlipBook from "react-pageflip";
+import HTMLFlipBookImport from "react-pageflip";
 import * as pdfjsLib from "pdfjs-dist";
 import { createClient } from "@/lib/supabase/client";
+
+// react-pageflip's published types mark several optional props as required and
+// don't expose a ref type; relax to what we actually use.
+const HTMLFlipBook = HTMLFlipBookImport as unknown as ForwardRefExoticComponent<
+  { children?: ReactNode; ref?: Ref<unknown>; [key: string]: unknown }
+>;
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
@@ -58,7 +64,7 @@ export function BookReader({
           canvas.height = viewport.height;
           const ctx = canvas.getContext("2d");
           if (!ctx) continue;
-          await page.render({ canvasContext: ctx, viewport }).promise;
+          await page.render({ canvas, canvasContext: ctx, viewport }).promise;
           const url = canvas.toDataURL("image/jpeg", 0.8);
           if (cancelled) return;
           setPages((prev) => {

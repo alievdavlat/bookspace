@@ -46,3 +46,6 @@ docs/
 Bookspace-PROGRESS.md
 design-ref/
 *.zip
+
+# local editor / preview config
+.claude/
