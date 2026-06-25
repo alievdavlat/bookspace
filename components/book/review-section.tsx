@@ -2,12 +2,13 @@
 
 import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { addReview, type ActionState } from "@/lib/actions/community";
+import { addReview, deleteReview, type ActionState } from "@/lib/actions/community";
 
 export type ReviewItem = {
   rating: number;
   body: string | null;
   created_at: string;
+  user_id: string;
   user: { username: string | null; display_name: string | null } | null;
 };
 
@@ -28,15 +29,18 @@ export function ReviewSection({
   reviews,
   avg,
   canReview,
+  currentUserId,
 }: {
   bookId: string;
   slug: string;
   reviews: ReviewItem[];
   avg: number | null;
   canReview: boolean;
+  currentUserId: string | null;
 }) {
   const [state, formAction, pending] = useActionState(addReview, initial);
-  const [rating, setRating] = useState(0);
+  const myReview = reviews.find((r) => r.user_id === currentUserId);
+  const [rating, setRating] = useState(myReview?.rating ?? 0);
 
   return (
     <section className="mt-12">
@@ -72,14 +76,28 @@ export function ReviewSection({
           <textarea
             name="body"
             rows={3}
+            defaultValue={myReview?.body ?? ""}
             placeholder="Share your thoughts…"
             className="mt-3 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
           />
           {state.error && <p className="mt-2 text-sm text-destructive">{state.error}</p>}
-          {state.ok && <p className="mt-2 text-sm text-green">Thanks for your review!</p>}
-          <Button type="submit" disabled={pending} className="mt-3" size="sm">
-            {pending ? "Saving…" : "Post review"}
-          </Button>
+          {state.ok && <p className="mt-2 text-sm text-green">Saved!</p>}
+          <div className="mt-3 flex items-center gap-3">
+            <Button type="submit" disabled={pending} size="sm">
+              {pending ? "Saving…" : myReview ? "Update review" : "Post review"}
+            </Button>
+            {myReview ? (
+              <button
+                type="submit"
+                formAction={async (fd) => {
+                  await deleteReview(fd);
+                }}
+                className="text-xs text-destructive hover:underline"
+              >
+                Delete my review
+              </button>
+            ) : null}
+          </div>
         </form>
       ) : null}
 

@@ -11,6 +11,7 @@ import { Comments } from "@/components/social/comments";
 import { loadComments } from "@/lib/comments";
 import { AiTools } from "@/components/ai/ai-tools";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { ReportButton } from "@/components/report-button";
 import { cleanHtml } from "@/lib/sanitize";
 
 export async function generateMetadata({
@@ -83,6 +84,7 @@ export default async function BlogPostPage({
               canLike={!!user}
             />
             <ReadAloud text={plainText} />
+            <ReportButton targetType="blog" targetId={post.id} canReport={!!user} />
           </div>
         </div>
         {plainText.length > 80 ? (

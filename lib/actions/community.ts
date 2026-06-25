@@ -36,6 +36,16 @@ export async function addReview(
   return { ok: true };
 }
 
+export async function deleteReview(formData: FormData): Promise<ActionState> {
+  const { supabase, user } = await requireUser();
+  if (!user) return { error: "Sign in." };
+  const bookId = String(formData.get("book_id") ?? "");
+  const slug = String(formData.get("slug") ?? "");
+  await supabase.from("reviews").delete().eq("book_id", bookId).eq("user_id", user.id);
+  if (slug) revalidatePath(`/book/${slug}`);
+  return { ok: true };
+}
+
 const SHELVES = ["Want to read", "Reading", "Read"];
 
 export async function addToShelf(

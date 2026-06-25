@@ -13,6 +13,7 @@ import { Comments } from "@/components/social/comments";
 import { loadComments } from "@/lib/comments";
 import { AiTools } from "@/components/ai/ai-tools";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { ReportButton } from "@/components/report-button";
 import { languageName } from "@/lib/languages";
 import type { BookWithAuthor } from "@/lib/types";
 
@@ -53,7 +54,7 @@ export default async function BookPage({
 
   const { data: reviewData } = await supabase
     .from("reviews")
-    .select("rating, body, created_at, user:profiles!reviews_user_id_fkey(username, display_name)")
+    .select("rating, body, created_at, user_id, user:profiles!reviews_user_id_fkey(username, display_name)")
     .eq("book_id", book.id)
     .order("created_at", { ascending: false });
   const reviews = (reviewData ?? []) as unknown as ReviewItem[];
@@ -183,6 +184,10 @@ export default async function BookPage({
               </div>
             ) : null}
 
+            <div className="mt-6">
+              <ReportButton targetType="book" targetId={book.id} canReport={!!user} />
+            </div>
+
             <dl className="mt-8 grid max-w-sm grid-cols-2 gap-y-2 text-sm">
               <dt className="text-muted-foreground">Format</dt>
               <dd className="uppercase">{book.format}</dd>
@@ -200,6 +205,7 @@ export default async function BookPage({
           reviews={reviews}
           avg={avg}
           canReview={!!user}
+          currentUserId={user?.id ?? null}
         />
 
         <Comments

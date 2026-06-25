@@ -17,6 +17,7 @@ import {
   Upload,
   PenLine,
   NotebookPen,
+  Flag,
   Menu,
   type LucideIcon,
 } from "lucide-react";
@@ -32,6 +33,7 @@ const SUBNAV: Record<string, Item[]> = {
     { href: "/admin/books", label: "Books", icon: BookText },
     { href: "/admin/users", label: "Users", icon: Users },
     { href: "/admin/genres", label: "Genres", icon: Tags },
+    { href: "/admin/reports", label: "Reports", icon: Flag },
     { href: "/admin/studio", label: "Studio", icon: Upload },
   ],
   studio: [
