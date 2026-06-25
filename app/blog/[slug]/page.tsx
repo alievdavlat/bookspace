@@ -6,6 +6,9 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { ReadAloud } from "@/components/read-aloud";
 import { TracingBeam } from "@/components/aceternity/tracing-beam";
+import { LikeButton } from "@/components/social/like-button";
+import { Comments, type CommentItem } from "@/components/social/comments";
+import { cleanHtml } from "@/lib/sanitize";
 
 export async function generateMetadata({
   params,
@@ -19,6 +22,7 @@ export async function generateMetadata({
 }
 
 type Post = {
+  id: string;
   title: string;
   content: { html?: string } | null;
   published_at: string | null;
@@ -35,7 +39,7 @@ export default async function BlogPostPage({
   const { data } = await supabase
     .from("blog_posts")
     .select(
-      "title, content, published_at, status, author:profiles!blog_posts_author_id_fkey(username, display_name)"
+      "id, title, content, published_at, status, author:profiles!blog_posts_author_id_fkey(username, display_name)"
     )
     .eq("slug", slug)
     .single();
@@ -44,6 +48,23 @@ export default async function BlogPostPage({
   const post = data as unknown as Post;
   const author = post.author?.display_name || post.author?.username || "Unknown";
   const plainText = (post.content?.html ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const [{ count: likeCount }, { data: likedRow }, { data: commentRows }] = await Promise.all([
+    supabase.from("likes").select("*", { count: "exact", head: true }).eq("target_type", "blog").eq("target_id", post.id),
+    user
+      ? supabase.from("likes").select("id").eq("user_id", user.id).eq("target_type", "blog").eq("target_id", post.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase
+      .from("comments")
+      .select("id, body, created_at, user_id, user:profiles!comments_user_id_fkey(username, display_name, avatar_url)")
+      .eq("target_type", "blog")
+      .eq("target_id", post.id)
+      .order("created_at", { ascending: false }),
+  ]);
+  const comments = (commentRows ?? []) as unknown as CommentItem[];
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -58,14 +79,31 @@ export default async function BlogPostPage({
             {author}
             {post.published_at ? ` · ${new Date(post.published_at).toLocaleDateString()}` : ""}
           </p>
-          <ReadAloud text={plainText} />
+          <div className="flex items-center gap-2">
+            <LikeButton
+              targetType="blog"
+              targetId={post.id}
+              initialLiked={!!likedRow}
+              initialCount={likeCount ?? 0}
+              canLike={!!user}
+            />
+            <ReadAloud text={plainText} />
+          </div>
         </div>
         <TracingBeam className="mt-8">
           <article
             className="prose prose-slate dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: post.content?.html ?? "" }}
+            dangerouslySetInnerHTML={{ __html: cleanHtml(post.content?.html) }}
           />
         </TracingBeam>
+
+        <Comments
+          targetType="blog"
+          targetId={post.id}
+          path={`/blog/${slug}`}
+          comments={comments}
+          currentUserId={user?.id ?? null}
+        />
       </main>
       <SiteFooter />
     </div>

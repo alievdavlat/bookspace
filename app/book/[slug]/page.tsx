@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { AddToShelf } from "@/components/book/add-to-shelf";
 import { AddToPlaylist } from "@/components/book/add-to-playlist";
 import { ReviewSection, type ReviewItem } from "@/components/book/review-section";
+import { LikeButton } from "@/components/social/like-button";
+import { Comments, type CommentItem } from "@/components/social/comments";
 import { languageName } from "@/lib/languages";
 import type { BookWithAuthor } from "@/lib/types";
 
@@ -69,6 +71,20 @@ export default async function BookPage({
     });
   }
 
+  const [{ count: likeCount }, { data: likedRow }, { data: commentRows }] = await Promise.all([
+    supabase.from("likes").select("*", { count: "exact", head: true }).eq("target_type", "book").eq("target_id", book.id),
+    user
+      ? supabase.from("likes").select("id").eq("user_id", user.id).eq("target_type", "book").eq("target_id", book.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase
+      .from("comments")
+      .select("id, body, created_at, user_id, user:profiles!comments_user_id_fkey(username, display_name, avatar_url)")
+      .eq("target_type", "book")
+      .eq("target_id", book.id)
+      .order("created_at", { ascending: false }),
+  ]);
+  const comments = (commentRows ?? []) as unknown as CommentItem[];
+
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
@@ -116,10 +132,17 @@ export default async function BookPage({
               </div>
             ) : null}
 
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap items-center gap-3">
               <Button render={<Link href={`/read/${book.id}`} />} nativeButton={false} size="lg">
                 Read
               </Button>
+              <LikeButton
+                targetType="book"
+                targetId={book.id}
+                initialLiked={!!likedRow}
+                initialCount={likeCount ?? 0}
+                canLike={!!user}
+              />
             </div>
 
             {user ? (
@@ -148,6 +171,14 @@ export default async function BookPage({
           reviews={reviews}
           avg={avg}
           canReview={!!user}
+        />
+
+        <Comments
+          targetType="book"
+          targetId={book.id}
+          path={`/book/${book.slug}`}
+          comments={comments}
+          currentUserId={user?.id ?? null}
         />
       </main>
       <SiteFooter />

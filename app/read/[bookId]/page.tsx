@@ -6,6 +6,7 @@ import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { BookReader } from "@/components/reader/book-reader";
 import { ReadAloud } from "@/components/read-aloud";
+import { cleanHtml } from "@/lib/sanitize";
 
 export const metadata: Metadata = { title: "Reader · Bookspace" };
 
@@ -56,7 +57,7 @@ export default async function ReadPage({
           {(chapters ?? []).map((ch, i) => (
             <section key={i}>
               {ch.title ? <h2 className="font-serif">{ch.title}</h2> : null}
-              <div dangerouslySetInnerHTML={{ __html: (ch.content as { html?: string })?.html ?? "" }} />
+              <div dangerouslySetInnerHTML={{ __html: cleanHtml((ch.content as { html?: string })?.html) }} />
             </section>
           ))}
         </article>
