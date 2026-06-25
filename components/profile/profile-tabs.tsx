@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ListMusic } from "lucide-react";
+import { ListMusic, MapPin, Link2, CalendarDays } from "lucide-react";
 import { BookCard } from "@/components/book-card";
 import { cn } from "@/lib/utils";
 import type { BookWithAuthor } from "@/lib/types";
@@ -133,37 +133,61 @@ export function ProfileTabs({
         )}
 
         {tab === "about" ? (
-          <div className="max-w-2xl space-y-6">
-            {aboutSections.length > 0 ? (
-              aboutSections.map((s) => (
-                <div key={s.id}>
+          <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+            {/* Main column — intro + LinkedIn-style sections */}
+            <div className="space-y-6">
+              {bio ? (
+                <section className="rounded-2xl border border-border bg-card p-6">
+                  <h3 className="font-serif text-lg font-semibold">Intro</h3>
+                  <p className="mt-2 whitespace-pre-line leading-relaxed text-muted-foreground">{bio}</p>
+                </section>
+              ) : null}
+
+              {aboutSections.map((s) => (
+                <section key={s.id} className="rounded-2xl border border-border bg-card p-6">
                   <h3 className="font-serif text-lg font-semibold">{s.title}</h3>
-                  {s.body ? <p className="mt-1 whitespace-pre-line text-muted-foreground">{s.body}</p> : null}
-                </div>
-              ))
-            ) : bio ? (
-              <p className="text-muted-foreground">{bio}</p>
-            ) : (
-              <p className="text-muted-foreground">This reader hasn&apos;t written an about yet.</p>
-            )}
+                  {s.body ? (
+                    <p className="mt-2 whitespace-pre-line leading-relaxed text-muted-foreground">{s.body}</p>
+                  ) : null}
+                </section>
+              ))}
 
-            <dl className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
-              <Stat label="Followers" value={followers} />
-              <Stat label="Following" value={following} />
-              <Stat label="Books" value={books.length} />
-              <Stat label="Joined" value={new Date(joined).toLocaleDateString()} />
-            </dl>
+              {!bio && aboutSections.length === 0 ? (
+                <p className="text-muted-foreground">This reader hasn&apos;t written an about yet.</p>
+              ) : null}
+            </div>
 
-            {location || website ? (
-              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                {location ? <span>📍 {location}</span> : null}
-                {website ? (
-                  <a href={website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                    {website.replace(/^https?:\/\//, "")}
-                  </a>
-                ) : null}
-              </div>
-            ) : null}
+            {/* Side column — YouTube/IG-style details + stats */}
+            <aside className="space-y-6">
+              <section className="rounded-2xl border border-border bg-card p-6">
+                <h3 className="font-serif text-lg font-semibold">Details</h3>
+                <ul className="mt-3 space-y-2.5 text-sm text-muted-foreground">
+                  {location ? (
+                    <li className="flex items-center gap-2">
+                      <MapPin className="size-4 shrink-0 text-primary" /> {location}
+                    </li>
+                  ) : null}
+                  {website ? (
+                    <li className="flex items-center gap-2">
+                      <Link2 className="size-4 shrink-0 text-primary" />
+                      <a href={website} target="_blank" rel="noopener noreferrer" className="truncate text-primary hover:underline">
+                        {website.replace(/^https?:\/\//, "")}
+                      </a>
+                    </li>
+                  ) : null}
+                  <li className="flex items-center gap-2">
+                    <CalendarDays className="size-4 shrink-0 text-primary" /> Joined {new Date(joined).toLocaleDateString(undefined, { month: "long", year: "numeric" })}
+                  </li>
+                </ul>
+              </section>
+
+              <dl className="grid grid-cols-2 gap-3 text-sm">
+                <Stat label="Followers" value={followers} />
+                <Stat label="Following" value={following} />
+                <Stat label="Books" value={books.length} />
+                <Stat label="Playlists" value={playlists.length} />
+              </dl>
+            </aside>
           </div>
         ) : null}
       </div>
