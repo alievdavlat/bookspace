@@ -7,6 +7,7 @@ import { BookCard } from "@/components/book-card";
 import { ExploreSidebar } from "@/components/explore/explore-sidebar";
 import { ActiveFilters } from "@/components/explore/active-filters";
 import { listGenreNames } from "@/lib/actions/genres";
+import { languageName } from "@/lib/languages";
 import type { BookWithAuthor } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Explore · Bookspace" };
@@ -26,6 +27,8 @@ export default async function ExplorePage({
   const genres = toArray(params.genre);
   const langs = toArray(params.lang);
   const formats = toArray(params.format);
+  const types = toArray(params.type);
+  const lengths = toArray(params.length);
   const sort = typeof params.sort === "string" ? params.sort : "new";
 
   const supabase = await createClient();
@@ -41,14 +44,33 @@ export default async function ExplorePage({
   if (genres.length) query = query.overlaps("genres", genres);
   if (langs.length) query = query.in("language", langs);
   if (formats.length) query = query.in("format", formats);
+  if (types.length) query = query.in("type", types);
+  if (lengths.length) {
+    const conds: string[] = [];
+    if (lengths.includes("short")) conds.push("page_count.lte.100");
+    if (lengths.includes("medium")) conds.push("and(page_count.gt.100,page_count.lte.300)");
+    if (lengths.includes("long")) conds.push("page_count.gt.300");
+    if (conds.length) query = query.or(conds.join(","));
+  }
 
   if (sort === "title") query = query.order("title", { ascending: true });
   else if (sort === "popular") query = query.order("views", { ascending: false });
+  else if (sort === "oldest") query = query.order("created_at", { ascending: true });
   else query = query.order("created_at", { ascending: false });
 
   const { data } = await query;
   const books = (data ?? []) as unknown as BookWithAuthor[];
   const genreNames = await listGenreNames();
+
+  // Languages present in the catalog (dynamic).
+  const { data: langRows } = await supabase
+    .from("books")
+    .select("language")
+    .eq("status", "published")
+    .eq("visibility", "public");
+  const presentLangs = Array.from(
+    new Set((langRows ?? []).map((r) => (r as { language: string | null }).language).filter(Boolean) as string[])
+  ).map((code) => ({ code, name: languageName(code) }));
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -63,7 +85,7 @@ export default async function ExplorePage({
           {/* Filters */}
           <div className="lg:sticky lg:top-24 lg:self-start">
             <Suspense fallback={<div className="text-sm text-muted-foreground">Loading filters…</div>}>
-              <ExploreSidebar genres={genreNames} />
+              <ExploreSidebar genres={genreNames} languages={presentLangs} />
             </Suspense>
           </div>
 

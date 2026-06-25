@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { LanguageSelect } from "@/components/language-select";
 import { createWrittenBook, type WriteFormState } from "@/lib/actions/written";
 
 const initial: WriteFormState = {};
@@ -14,7 +15,7 @@ export function WriteForm({ genres }: { genres: string[] }) {
   const [state, formAction, pending] = useActionState(createWrittenBook, initial);
 
   return (
-    <form action={formAction} className="mt-8 flex max-w-3xl flex-col gap-5">
+    <form action={formAction} className="mt-8 flex w-full flex-col gap-5">
       <div className="flex flex-col gap-2">
         <Label htmlFor="title">Title</Label>
         <Input id="title" name="title" required minLength={2} placeholder="Your book title" />
@@ -28,11 +29,7 @@ export function WriteForm({ genres }: { genres: string[] }) {
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
           <Label htmlFor="language">Language</Label>
-          <select id="language" name="language" defaultValue="en" className={fieldClass}>
-            <option value="en">English</option>
-            <option value="uz">Uzbek</option>
-            <option value="ru">Russian</option>
-          </select>
+          <LanguageSelect id="language" defaultValue="en" />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="visibility">Visibility</Label>

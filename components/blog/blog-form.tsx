@@ -12,7 +12,7 @@ const initial: BlogFormState = {};
 export function BlogForm() {
   const [state, formAction, pending] = useActionState(createBlogPost, initial);
   return (
-    <form action={formAction} className="mt-8 flex max-w-3xl flex-col gap-5">
+    <form action={formAction} className="mt-8 flex w-full flex-col gap-5">
       <div className="flex flex-col gap-2">
         <Label htmlFor="title">Title</Label>
         <Input id="title" name="title" required minLength={2} placeholder="Post title" />

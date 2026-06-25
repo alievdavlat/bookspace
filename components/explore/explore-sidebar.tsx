@@ -12,22 +12,34 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const LANGUAGES = [
-  { v: "en", l: "English" },
-  { v: "uz", l: "Uzbek" },
-  { v: "ru", l: "Russian" },
-];
 const FORMATS = [
   { v: "pdf", l: "PDF" },
   { v: "epub", l: "EPUB" },
+  { v: "written", l: "Written" },
+];
+const TYPES = [
+  { v: "uploaded", l: "Uploaded" },
+  { v: "written", l: "Written online" },
+];
+const LENGTHS = [
+  { v: "short", l: "Short (≤100p)" },
+  { v: "medium", l: "Medium (100–300p)" },
+  { v: "long", l: "Long (300p+)" },
 ];
 const SORTS = [
   { v: "new", l: "Newest" },
+  { v: "oldest", l: "Oldest" },
   { v: "title", l: "Title A–Z" },
   { v: "popular", l: "Most read" },
 ];
 
-export function ExploreSidebar({ genres }: { genres: string[] }) {
+export function ExploreSidebar({
+  genres,
+  languages,
+}: {
+  genres: string[];
+  languages: { code: string; name: string }[];
+}) {
   const router = useRouter();
   const sp = useSearchParams();
   const [q, setQ] = useState(sp.get("q") ?? "");
@@ -99,11 +111,25 @@ export function ExploreSidebar({ genres }: { genres: string[] }) {
         ))}
       </Group>
 
-      <Group title="Language">
-        {LANGUAGES.map((l) => (
-          <Check key={l.v} label={l.l} on={checked("lang", l.v)} onToggle={() => toggle("lang", l.v)} />
+      <Group title="Type">
+        {TYPES.map((t) => (
+          <Check key={t.v} label={t.l} on={checked("type", t.v)} onToggle={() => toggle("type", t.v)} />
         ))}
       </Group>
+
+      <Group title="Length">
+        {LENGTHS.map((l) => (
+          <Check key={l.v} label={l.l} on={checked("length", l.v)} onToggle={() => toggle("length", l.v)} />
+        ))}
+      </Group>
+
+      {languages.length > 0 ? (
+        <Group title="Language">
+          {languages.map((l) => (
+            <Check key={l.code} label={l.name} on={checked("lang", l.code)} onToggle={() => toggle("lang", l.code)} />
+          ))}
+        </Group>
+      ) : null}
 
       <Group title="Format">
         {FORMATS.map((f) => (
