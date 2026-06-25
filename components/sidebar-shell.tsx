@@ -5,19 +5,22 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  Library,
+  PenTool,
+  Settings as SettingsIcon,
+  User,
+  Shield,
   BookText,
   Users,
   Tags,
   Upload,
   PenLine,
   NotebookPen,
-  ArrowLeft,
   type LucideIcon,
 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarHeader,
@@ -26,14 +29,19 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Brand } from "@/components/brand";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 type Item = { href: string; label: string; icon: LucideIcon; exact?: boolean };
 
-const ITEMS: Record<"admin" | "studio", Item[]> = {
+const SUBNAV: Record<string, Item[]> = {
   admin: [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
     { href: "/admin/books", label: "Books", icon: BookText },
@@ -52,64 +60,113 @@ const ITEMS: Record<"admin" | "studio", Item[]> = {
 export function SidebarShell({
   area,
   label,
+  username,
+  isAdmin,
   topRight,
   children,
 }: {
-  area: "admin" | "studio";
+  area: "admin" | "studio" | "dashboard";
   label: string;
+  username?: string | null;
+  isAdmin?: boolean;
   topRight?: ReactNode;
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const items = ITEMS[area];
-  const active = (it: Item) =>
+  const sub = SUBNAV[area] ?? [];
+
+  // Level-1 app areas (the narrow rail).
+  const rail: Item[] = [
+    { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
+    { href: "/library", label: "My library", icon: Library },
+    { href: "/studio", label: "Studio", icon: PenTool },
+    { href: "/settings", label: "Settings", icon: SettingsIcon },
+    ...(username ? [{ href: `/author/${username}`, label: "Profile", icon: User }] : []),
+    ...(isAdmin ? [{ href: "/admin", label: "Admin", icon: Shield }] : []),
+  ];
+
+  const railActive = (it: Item) =>
+    it.href === "/dashboard"
+      ? area === "dashboard"
+      : it.href === "/studio"
+        ? area === "studio"
+        : it.href === "/admin"
+          ? area === "admin"
+          : pathname.startsWith(it.href);
+
+  const subActive = (it: Item) =>
     it.exact ? pathname === it.href : pathname === it.href || pathname.startsWith(it.href + "/");
 
   return (
-    <SidebarProvider>
-      <Sidebar collapsible="icon">
-        <SidebarHeader className="px-3 py-3.5">
-          <Brand />
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>{label}</SidebarGroupLabel>
-            <SidebarMenu>
-              {items.map((it) => {
-                const Icon = it.icon;
-                return (
-                  <SidebarMenuItem key={it.href}>
-                    <SidebarMenuButton isActive={active(it)} tooltip={it.label} render={<Link href={it.href} />}>
-                      <Icon />
-                      <span>{it.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroup>
-        </SidebarContent>
-        <SidebarFooter>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Back to site" render={<Link href="/" />}>
-                <ArrowLeft />
-                <span>Back to site</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-        <SidebarRail />
-      </Sidebar>
+    <div className="flex min-h-screen">
+      {/* Level 1 — narrow icon rail */}
+      <nav className="flex w-14 shrink-0 flex-col items-center gap-1 border-r border-border bg-sidebar py-3">
+        <Link href="/" className="mb-2 grid size-9 place-items-center rounded-lg bg-primary font-serif text-lg font-bold text-primary-foreground">
+          B
+        </Link>
+        {rail.map((it) => {
+          const Icon = it.icon;
+          const active = railActive(it);
+          return (
+            <Tooltip key={it.href}>
+              <TooltipTrigger
+                render={
+                  <Link
+                    href={it.href}
+                    className={cn(
+                      "grid size-10 place-items-center rounded-lg transition-colors [&>svg]:size-5",
+                      active
+                        ? "bg-primary/15 text-primary"
+                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    )}
+                  >
+                    <Icon />
+                  </Link>
+                }
+              />
+              <TooltipContent side="right">{it.label}</TooltipContent>
+            </Tooltip>
+          );
+        })}
+      </nav>
 
-      <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b border-border bg-background/80 px-4 backdrop-blur">
-          <SidebarTrigger />
-          <span className="font-serif text-sm font-medium text-muted-foreground">{label}</span>
-          <div className="ml-auto flex items-center gap-2">{topRight}</div>
-        </header>
-        <div className="min-w-0 flex-1 p-6">{children}</div>
-      </SidebarInset>
-    </SidebarProvider>
+      {/* Level 2 — contextual sub-nav (Strapi-style) when the area has one */}
+      <SidebarProvider>
+        {sub.length > 0 ? (
+          <Sidebar collapsible="icon" className="border-r border-border">
+            <SidebarHeader className="px-3 py-3.5">
+              <Brand />
+            </SidebarHeader>
+            <SidebarContent>
+              <SidebarGroup>
+                <SidebarGroupLabel>{label}</SidebarGroupLabel>
+                <SidebarMenu>
+                  {sub.map((it) => {
+                    const Icon = it.icon;
+                    return (
+                      <SidebarMenuItem key={it.href}>
+                        <SidebarMenuButton isActive={subActive(it)} tooltip={it.label} render={<Link href={it.href} />}>
+                          <Icon />
+                          <span>{it.label}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroup>
+            </SidebarContent>
+          </Sidebar>
+        ) : null}
+
+        <SidebarInset>
+          <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b border-border bg-background/80 px-4 backdrop-blur">
+            {sub.length > 0 ? <SidebarTrigger /> : null}
+            <span className="font-serif text-sm font-medium text-muted-foreground">{label}</span>
+            <div className="ml-auto flex items-center gap-2">{topRight}</div>
+          </header>
+          <div className="min-w-0 flex-1 p-6">{children}</div>
+        </SidebarInset>
+      </SidebarProvider>
+    </div>
   );
 }

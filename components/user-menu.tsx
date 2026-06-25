@@ -48,20 +48,15 @@ export function UserMenu({ profile }: { profile: MenuProfile }) {
           ) : null}
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link href="/dashboard" />}>Dashboard</DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/library" />}>My library</DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/studio" />}>Studio</DropdownMenuItem>
         <DropdownMenuItem
           render={<Link href={profile.username ? `/author/${profile.username}` : "/dashboard"} />}
         >
           Profile
         </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href="/dashboard" />}>Dashboard</DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/settings" />}>Settings</DropdownMenuItem>
         {profile.role === "admin" ? (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem render={<Link href="/admin" />}>Admin</DropdownMenuItem>
-          </>
+          <DropdownMenuItem render={<Link href="/admin" />}>Admin</DropdownMenuItem>
         ) : null}
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onClick={() => signOut()}>

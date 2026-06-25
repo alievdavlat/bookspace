@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { PageShell } from "@/components/page-shell";
 import { SettingsForm } from "@/components/settings/settings-form";
 import { SectionsManager, type Section } from "@/components/settings/sections-manager";
 
@@ -12,7 +10,7 @@ export default async function SettingsPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/sign-in?redirect=/settings");
+  if (!user) return null;
 
   const [{ data: profile }, { data: sectionRows }] = await Promise.all([
     supabase
@@ -30,7 +28,9 @@ export default async function SettingsPage() {
   const sections = (sectionRows ?? []) as Section[];
 
   return (
-    <PageShell title="Settings" subtitle="Your profile, about and custom tabs.">
+    <>
+      <h1 className="font-serif text-3xl font-semibold">Settings</h1>
+      <p className="mt-1 text-muted-foreground">Your profile, about and custom tabs.</p>
       <SettingsForm
         displayName={profile?.display_name ?? ""}
         status={profile?.status ?? ""}
@@ -57,6 +57,6 @@ export default async function SettingsPage() {
         </p>
         <SectionsManager kind="tab" sections={sections} />
       </section>
-    </PageShell>
+    </>
   );
 }

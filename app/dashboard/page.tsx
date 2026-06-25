@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { SiteHeader } from "@/components/site-header";
 import { BookCard } from "@/components/book-card";
 import { Button } from "@/components/ui/button";
 import type { BookWithAuthor } from "@/lib/types";
@@ -17,7 +15,7 @@ export default async function DashboardPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/sign-in?redirect=/dashboard");
+  if (!user) return null;
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -62,30 +60,27 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
-        <p className="text-sm text-primary">Welcome back</p>
-        <h1 className="mt-1 font-serif text-4xl font-semibold">Hello, {name} 👋</h1>
+    <>
+      <p className="text-sm text-primary">Welcome back</p>
+      <h1 className="mt-1 font-serif text-4xl font-semibold">Hello, {name} 👋</h1>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          {stats.map((s) => (
-            <div key={s.label} className="rounded-2xl border border-border bg-card p-6">
-              <p className="font-serif text-3xl font-semibold text-primary">{s.value}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{s.label}</p>
-            </div>
-          ))}
-        </div>
+      <div className="mt-8 grid gap-4 sm:grid-cols-3">
+        {stats.map((s) => (
+          <div key={s.label} className="rounded-2xl border border-border bg-card p-6">
+            <p className="font-serif text-3xl font-semibold text-primary">{s.value}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{s.label}</p>
+          </div>
+        ))}
+      </div>
 
-        <Section title="Continue reading" href="/library" cta="My library" books={continueReading}>
-          You aren&apos;t reading anything yet.
-        </Section>
+      <Section title="Continue reading" href="/library" cta="My library" books={continueReading}>
+        You aren&apos;t reading anything yet.
+      </Section>
 
-        <Section title="Recommended" href="/explore" cta="Explore" books={recommendations}>
-          Nothing here yet.
-        </Section>
-      </main>
-    </div>
+      <Section title="Recommended" href="/explore" cta="Explore" books={recommendations}>
+        Nothing here yet.
+      </Section>
+    </>
   );
 }
 

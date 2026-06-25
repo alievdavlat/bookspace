@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { PageShell } from "@/components/page-shell";
 import { BookCard } from "@/components/book-card";
 import type { BookWithAuthor } from "@/lib/types";
 
@@ -16,7 +14,7 @@ export default async function LibraryPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/sign-in?redirect=/library");
+  if (!user) return null;
 
   // Continue reading
   const { data: progress } = await supabase
@@ -54,7 +52,9 @@ export default async function LibraryPage() {
   const hasAnything = continueReading.length > 0 || (shelves ?? []).some((s) => byShelf(s.id).length);
 
   return (
-    <PageShell title="My library" subtitle="Your shelves and books in progress.">
+    <>
+      <h1 className="font-serif text-3xl font-semibold">My library</h1>
+      <p className="mt-1 text-muted-foreground">Your shelves and books in progress.</p>
       {!hasAnything ? (
         <div className="mt-10 rounded-2xl border border-dashed border-border bg-secondary/30 p-12 text-center">
           <p className="font-serif text-2xl">Your library is empty</p>
@@ -78,7 +78,7 @@ export default async function LibraryPage() {
           })}
         </div>
       )}
-    </PageShell>
+    </>
   );
 }
 
