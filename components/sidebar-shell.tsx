@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -16,27 +16,11 @@ import {
   Upload,
   PenLine,
   NotebookPen,
+  Menu,
   type LucideIcon,
 } from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
 import { Brand } from "@/components/brand";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 type Item = { href: string; label: string; icon: LucideIcon; exact?: boolean };
@@ -73,11 +57,11 @@ export function SidebarShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
   const sub = SUBNAV[area] ?? [];
 
-  // Level-1 app areas (the narrow rail).
-  const rail: Item[] = [
-    { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
+  const main: Item[] = [
+    { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
     { href: "/library", label: "My library", icon: Library },
     { href: "/studio", label: "Studio", icon: PenTool },
     { href: "/settings", label: "Settings", icon: SettingsIcon },
@@ -85,9 +69,9 @@ export function SidebarShell({
     ...(isAdmin ? [{ href: "/admin", label: "Admin", icon: Shield }] : []),
   ];
 
-  const railActive = (it: Item) =>
+  const mainActive = (it: Item) =>
     it.href === "/dashboard"
-      ? area === "dashboard"
+      ? area === "dashboard" && pathname === "/dashboard"
       : it.href === "/studio"
         ? area === "studio"
         : it.href === "/admin"
@@ -97,76 +81,93 @@ export function SidebarShell({
   const subActive = (it: Item) =>
     it.exact ? pathname === it.href : pathname === it.href || pathname.startsWith(it.href + "/");
 
+  const itemClass = (active: boolean) =>
+    cn(
+      "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors [&>svg]:size-4 [&>svg]:shrink-0",
+      active
+        ? "bg-primary/10 font-medium text-primary"
+        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+    );
+
+  const MainNav = ({ onNavigate }: { onNavigate?: () => void }) => (
+    <div className="flex flex-col gap-0.5">
+      {main.map((it) => {
+        const Icon = it.icon;
+        return (
+          <Link key={it.href} href={it.href} onClick={onNavigate} className={itemClass(mainActive(it))}>
+            <Icon />
+            {it.label}
+          </Link>
+        );
+      })}
+    </div>
+  );
+
+  const SubNav = ({ onNavigate }: { onNavigate?: () => void }) => (
+    <div className="flex flex-col gap-0.5">
+      {sub.map((it) => {
+        const Icon = it.icon;
+        return (
+          <Link key={it.href} href={it.href} onClick={onNavigate} className={itemClass(subActive(it))}>
+            <Icon />
+            {it.label}
+          </Link>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div className="flex min-h-screen">
-      {/* Level 1 — narrow icon rail */}
-      <nav className="flex w-14 shrink-0 flex-col items-center gap-1 border-r border-border bg-sidebar py-3">
-        <Link href="/" className="mb-2 grid size-9 place-items-center rounded-lg bg-primary font-serif text-lg font-bold text-primary-foreground">
-          B
-        </Link>
-        {rail.map((it) => {
-          const Icon = it.icon;
-          const active = railActive(it);
-          return (
-            <Tooltip key={it.href}>
-              <TooltipTrigger
-                render={
-                  <Link
-                    href={it.href}
-                    className={cn(
-                      "grid size-10 place-items-center rounded-lg transition-colors [&>svg]:size-5",
-                      active
-                        ? "bg-primary/15 text-primary"
-                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                    )}
-                  >
-                    <Icon />
-                  </Link>
-                }
-              />
-              <TooltipContent side="right">{it.label}</TooltipContent>
-            </Tooltip>
-          );
-        })}
-      </nav>
+      {/* Main (dashboard) sidebar — always visible on desktop */}
+      <aside className="hidden w-56 shrink-0 flex-col border-r border-border bg-sidebar p-3 md:flex">
+        <div className="px-2 py-2">
+          <Brand />
+        </div>
+        <div className="mt-3">
+          <MainNav />
+        </div>
+      </aside>
 
-      {/* Level 2 — contextual sub-nav (Strapi-style) when the area has one */}
-      <SidebarProvider>
-        {sub.length > 0 ? (
-          <Sidebar collapsible="icon" className="border-r border-border">
-            <SidebarHeader className="px-3 py-3.5">
-              <Brand />
-            </SidebarHeader>
-            <SidebarContent>
-              <SidebarGroup>
-                <SidebarGroupLabel>{label}</SidebarGroupLabel>
-                <SidebarMenu>
-                  {sub.map((it) => {
-                    const Icon = it.icon;
-                    return (
-                      <SidebarMenuItem key={it.href}>
-                        <SidebarMenuButton isActive={subActive(it)} tooltip={it.label} render={<Link href={it.href} />}>
-                          <Icon />
-                          <span>{it.label}</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroup>
-            </SidebarContent>
-          </Sidebar>
-        ) : null}
+      {/* Second (contextual) sidebar — beside the main one, Strapi-style */}
+      {sub.length > 0 ? (
+        <aside className="hidden w-52 shrink-0 flex-col border-r border-border bg-sidebar/40 p-3 md:flex">
+          <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
+          <SubNav />
+        </aside>
+      ) : null}
 
-        <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b border-border bg-background/80 px-4 backdrop-blur">
-            {sub.length > 0 ? <SidebarTrigger /> : null}
-            <span className="font-serif text-sm font-medium text-muted-foreground">{label}</span>
-            <div className="ml-auto flex items-center gap-2">{topRight}</div>
-          </header>
-          <div className="min-w-0 flex-1 p-6">{children}</div>
-        </SidebarInset>
-      </SidebarProvider>
+      {/* Content */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b border-border bg-background/80 px-4 backdrop-blur">
+          <button
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open menu"
+            className="grid size-9 place-items-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground md:hidden"
+          >
+            <Menu className="size-5" />
+          </button>
+          <span className="font-serif text-sm font-medium text-muted-foreground">{label}</span>
+          <div className="ml-auto flex items-center gap-2">{topRight}</div>
+        </header>
+        <main className="min-w-0 flex-1 p-6">{children}</main>
+      </div>
+
+      {/* Mobile: both navs in a sheet */}
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" className="w-72 overflow-y-auto p-4">
+          <SheetTitle className="px-3 font-serif text-lg">Bookspace</SheetTitle>
+          <div className="mt-5">
+            <MainNav onNavigate={() => setMobileOpen(false)} />
+          </div>
+          {sub.length > 0 ? (
+            <div className="mt-5 border-t border-border pt-4">
+              <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
+              <SubNav onNavigate={() => setMobileOpen(false)} />
+            </div>
+          ) : null}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
