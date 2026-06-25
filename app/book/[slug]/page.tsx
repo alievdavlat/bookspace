@@ -86,6 +86,25 @@ export default async function BookPage({
   ]);
   const comments = (commentRows ?? []) as unknown as CommentItem[];
 
+  let currentShelf: string | null = null;
+  if (user) {
+    const { data: sysShelves } = await supabase
+      .from("shelves")
+      .select("id, name")
+      .eq("owner_id", user.id)
+      .in("name", ["Want to read", "Reading", "Read"]);
+    const sysIds = (sysShelves ?? []).map((s) => s.id);
+    if (sysIds.length) {
+      const { data: si } = await supabase
+        .from("shelf_items")
+        .select("shelf_id")
+        .eq("book_id", book.id)
+        .in("shelf_id", sysIds)
+        .maybeSingle();
+      if (si) currentShelf = (sysShelves ?? []).find((s) => s.id === si.shelf_id)?.name ?? null;
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
@@ -148,7 +167,7 @@ export default async function BookPage({
 
             {user ? (
               <div className="mt-4 flex flex-wrap items-center gap-3">
-                <AddToShelf bookId={book.id} />
+                <AddToShelf bookId={book.id} currentShelf={currentShelf} />
                 <AddToPlaylist bookId={book.id} playlists={playlists} />
               </div>
             ) : null}

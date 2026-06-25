@@ -76,6 +76,37 @@ export async function addToShelf(
   return { ok: true };
 }
 
+/** Reading status = one system shelf at a time. Moves the book to `shelfName`, removing it from the others. */
+export async function setShelf(bookId: string, shelfName: string): Promise<void> {
+  const { supabase, user } = await requireUser();
+  if (!user || !SHELVES.includes(shelfName)) return;
+
+  const { data: shelves } = await supabase
+    .from("shelves")
+    .select("id, name")
+    .eq("owner_id", user.id)
+    .in("name", SHELVES);
+
+  const ids = (shelves ?? []).map((s) => s.id);
+  if (ids.length) {
+    await supabase.from("shelf_items").delete().eq("book_id", bookId).in("shelf_id", ids);
+  }
+
+  let targetId = (shelves ?? []).find((s) => s.name === shelfName)?.id;
+  if (!targetId) {
+    const { data: created } = await supabase
+      .from("shelves")
+      .insert({ owner_id: user.id, name: shelfName, is_system: true, visibility: "private" })
+      .select("id")
+      .single();
+    targetId = created?.id;
+  }
+  if (targetId) {
+    await supabase.from("shelf_items").upsert({ shelf_id: targetId, book_id: bookId }, { onConflict: "shelf_id,book_id" });
+  }
+  revalidatePath("/library");
+}
+
 export async function toggleFollow(formData: FormData): Promise<void> {
   const { supabase, user } = await requireUser();
   if (!user) return;

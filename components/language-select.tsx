@@ -1,7 +1,7 @@
 import { LANGUAGES } from "@/lib/languages";
+import { FormSelect } from "@/components/form-select";
 
-const fieldClass =
-  "w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50";
+const OPTIONS = LANGUAGES.map((l) => ({ value: l.code, label: l.name }));
 
 export function LanguageSelect({
   name = "language",
@@ -12,13 +12,5 @@ export function LanguageSelect({
   defaultValue?: string;
   id?: string;
 }) {
-  return (
-    <select id={id} name={name} defaultValue={defaultValue} className={fieldClass}>
-      {LANGUAGES.map((l) => (
-        <option key={l.code} value={l.code}>
-          {l.name}
-        </option>
-      ))}
-    </select>
-  );
+  return <FormSelect name={name} id={id} defaultValue={defaultValue} options={OPTIONS} placeholder="Language" />;
 }

@@ -1,29 +1,54 @@
 "use client";
 
-import { useActionState } from "react";
-import { Button } from "@/components/ui/button";
-import { addToShelf, type ActionState } from "@/lib/actions/community";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { BookMarked } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { setShelf } from "@/lib/actions/community";
 
-const initial: ActionState = {};
 const SHELVES = ["Want to read", "Reading", "Read"];
 
-export function AddToShelf({ bookId }: { bookId: string }) {
-  const [state, formAction, pending] = useActionState(addToShelf, initial);
+export function AddToShelf({
+  bookId,
+  currentShelf,
+}: {
+  bookId: string;
+  currentShelf: string | null;
+}) {
+  const [shelf, setShelfState] = useState(currentShelf ?? "");
+  const [pending, startTransition] = useTransition();
+
   return (
-    <div>
-      <div className="flex flex-wrap gap-2">
+    <Select
+      value={shelf}
+      onValueChange={(v) => {
+        if (!v) return;
+        setShelfState(v);
+        startTransition(async () => {
+          await setShelf(bookId, v);
+          toast.success(`Moved to “${v}”`);
+        });
+      }}
+    >
+      <SelectTrigger className="w-44" disabled={pending}>
+        <span className="flex items-center gap-1.5">
+          <BookMarked className="size-4" />
+          <SelectValue placeholder="Add to shelf">{(v: string) => v || "Add to shelf"}</SelectValue>
+        </span>
+      </SelectTrigger>
+      <SelectContent>
         {SHELVES.map((s) => (
-          <form key={s} action={formAction}>
-            <input type="hidden" name="book_id" value={bookId} />
-            <input type="hidden" name="shelf" value={s} />
-            <Button type="submit" variant="outline" size="sm" disabled={pending}>
-              + {s}
-            </Button>
-          </form>
+          <SelectItem key={s} value={s}>
+            {s}
+          </SelectItem>
         ))}
-      </div>
-      {state.ok && <p className="mt-2 text-sm text-green">Added to your shelf.</p>}
-      {state.error && <p className="mt-2 text-sm text-destructive">{state.error}</p>}
-    </div>
+      </SelectContent>
+    </Select>
   );
 }

@@ -3,6 +3,13 @@
 import { useState } from "react";
 import { Sparkles, Languages, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { aiSummarize, aiTranslate } from "@/lib/actions/ai";
 
 const LANGS = ["English", "Uzbek", "Russian", "Spanish", "French", "German", "Arabic", "Turkish"];
@@ -34,17 +41,18 @@ export function AiTools({ text, label = "AI tools" }: { text: string; label?: st
           Summarize
         </Button>
         <div className="flex items-center gap-1">
-          <select
-            value={lang}
-            onChange={(e) => setLang(e.target.value)}
-            className="rounded-md border border-input bg-transparent px-2 py-1.5 text-sm outline-none focus-visible:border-ring"
-          >
-            {LANGS.map((l) => (
-              <option key={l} value={l}>
-                {l}
-              </option>
-            ))}
-          </select>
+          <Select value={lang} onValueChange={(v) => v && setLang(v)}>
+            <SelectTrigger size="sm" className="w-28">
+              <SelectValue>{(v: string) => v}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {LANGS.map((l) => (
+                <SelectItem key={l} value={l}>
+                  {l}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button size="sm" variant="outline" disabled={!!loading} onClick={() => run("translate")}>
             {loading === "translate" ? <Loader2 className="size-4 animate-spin" /> : <Languages className="size-4" />}
             Translate

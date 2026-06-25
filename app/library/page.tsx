@@ -5,6 +5,7 @@ import { ListMusic } from "lucide-react";
 import { BookCard } from "@/components/book-card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { FormSelect } from "@/components/form-select";
 import { createPlaylist } from "@/lib/actions/playlists";
 import type { BookWithAuthor } from "@/lib/types";
 
@@ -99,14 +100,15 @@ export default async function LibraryPage() {
         <h2 className="font-serif text-2xl font-semibold">Playlists</h2>
         <form action={createPlaylist} className="mt-4 flex max-w-md gap-2">
           <Input name="title" required placeholder="New playlist name" />
-          <select
+          <FormSelect
             name="visibility"
             defaultValue="public"
-            className="rounded-md border border-input bg-transparent px-2 text-sm outline-none focus-visible:border-ring"
-          >
-            <option value="public">Public</option>
-            <option value="private">Private</option>
-          </select>
+            className="w-32"
+            options={[
+              { value: "public", label: "Public" },
+              { value: "private", label: "Private" },
+            ]}
+          />
           <Button type="submit">Create</Button>
         </form>
 

@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LanguageSelect } from "@/components/language-select";
+import { FormSelect } from "@/components/form-select";
 import { createUploadedBook, type BookFormState } from "@/lib/actions/books";
 
 const initial: BookFormState = {};
@@ -40,11 +41,16 @@ export function UploadForm({ genres }: { genres: string[] }) {
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="visibility">Visibility</Label>
-          <select id="visibility" name="visibility" defaultValue="public" className={fieldClass}>
-            <option value="public">Public</option>
-            <option value="unlisted">Unlisted (link only)</option>
-            <option value="private">Private</option>
-          </select>
+          <FormSelect
+            name="visibility"
+            id="visibility"
+            defaultValue="public"
+            options={[
+              { value: "public", label: "Public" },
+              { value: "unlisted", label: "Unlisted (link only)" },
+              { value: "private", label: "Private" },
+            ]}
+          />
         </div>
       </div>
 
