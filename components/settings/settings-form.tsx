@@ -34,7 +34,7 @@ export function SettingsForm({
   const [state, formAction, pending] = useActionState(updateProfile, initial);
 
   return (
-    <form action={formAction} className="mt-8 flex w-full max-w-2xl flex-col gap-6">
+    <form action={formAction} className="mt-8 flex w-full flex-col gap-6">
       {/* Banner + avatar preview */}
       <div className="overflow-hidden rounded-2xl border border-border">
         <div

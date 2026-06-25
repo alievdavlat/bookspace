@@ -42,7 +42,7 @@ export default async function SettingsPage() {
         bannerUrl={profile?.banner_url ?? null}
       />
 
-      <section className="mt-14 max-w-2xl">
+      <section className="mt-14">
         <h2 className="font-serif text-2xl font-semibold">About</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Rich blocks shown on your profile&apos;s About tab.
@@ -50,7 +50,7 @@ export default async function SettingsPage() {
         <SectionsManager kind="about" sections={sections} />
       </section>
 
-      <section className="mt-14 max-w-2xl">
+      <section className="mt-14">
         <h2 className="font-serif text-2xl font-semibold">Custom tabs</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Add your own tabs (e.g. Awards, Press) — they appear on your profile, YouTube-style.

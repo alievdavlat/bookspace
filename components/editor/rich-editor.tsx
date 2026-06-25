@@ -37,6 +37,7 @@ import {
   Undo2,
   Redo2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
@@ -76,21 +77,28 @@ function Divider() {
 
 function Toolbar({ editor }: { editor: Editor }) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const [popover, setPopover] = useState<null | "link" | "video">(null);
+  const [field, setField] = useState("");
 
-  const setLink = () => {
-    const prev = editor.getAttributes("link").href as string | undefined;
-    const url = window.prompt("Link URL", prev || "https://");
-    if (url === null) return;
-    if (url === "") {
-      editor.chain().focus().extendMarkRange("link").unsetLink().run();
-      return;
-    }
-    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+  const openLink = () => {
+    setField((editor.getAttributes("link").href as string) || "https://");
+    setPopover("link");
+  };
+  const openVideo = () => {
+    setField("");
+    setPopover("video");
   };
 
-  const addYoutube = () => {
-    const url = window.prompt("YouTube or video URL");
-    if (url) editor.commands.setYoutubeVideo({ src: url });
+  const applyPopover = () => {
+    const url = field.trim();
+    if (popover === "link") {
+      if (!url) editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      else editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+    } else if (popover === "video" && url) {
+      editor.commands.setYoutubeVideo({ src: url });
+    }
+    setPopover(null);
+    setField("");
   };
 
   const onImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,7 +116,7 @@ function Toolbar({ editor }: { editor: Editor }) {
       const url = supabase.storage.from("covers").getPublicUrl(path).data.publicUrl;
       editor.chain().focus().setImage({ src: url }).run();
     } else {
-      window.alert("Image upload failed: " + error.message);
+      toast.error("Image upload failed: " + error.message);
     }
   };
 
@@ -170,13 +178,13 @@ function Toolbar({ editor }: { editor: Editor }) {
         <AlignRight />
       </Btn>
       <Divider />
-      <Btn title="Link" active={editor.isActive("link")} onClick={setLink}>
+      <Btn title="Link" active={editor.isActive("link")} onClick={openLink}>
         <LinkIcon />
       </Btn>
       <Btn title="Image" onClick={() => fileRef.current?.click()}>
         <ImageIcon />
       </Btn>
-      <Btn title="Video embed" onClick={addYoutube}>
+      <Btn title="Video embed" onClick={openVideo}>
         <YoutubeIcon />
       </Btn>
       <Btn title="Table" onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}>
@@ -186,6 +194,33 @@ function Toolbar({ editor }: { editor: Editor }) {
         <Minus />
       </Btn>
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={onImageFile} />
+
+      {popover ? (
+        <div className="absolute left-2 top-full z-30 mt-1 flex w-80 max-w-[calc(100%-1rem)] items-center gap-2 rounded-lg border border-border bg-popover p-2 shadow-xl">
+          <input
+            autoFocus
+            value={field}
+            onChange={(e) => setField(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                applyPopover();
+              } else if (e.key === "Escape") {
+                setPopover(null);
+              }
+            }}
+            placeholder={popover === "link" ? "https://example.com" : "YouTube / video URL"}
+            className="min-w-0 flex-1 rounded-md border border-input bg-transparent px-2 py-1.5 text-sm outline-none focus-visible:border-ring"
+          />
+          <button
+            type="button"
+            onClick={applyPopover}
+            className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
+          >
+            {popover === "link" ? "Apply" : "Embed"}
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

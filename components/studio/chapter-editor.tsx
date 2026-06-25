@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { GripVertical, Plus, Pencil, Trash2, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
 import { RichEditor } from "@/components/editor/rich-editor";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,7 @@ export function ChapterEditor({
   const [chapters, setChapters] = useState<ChapterData[]>(initialChapters);
   const [activeId, setActiveId] = useState<string>(initialChapters[0]?.id ?? "");
   const [save, setSave] = useState<SaveState>("idle");
+  const [editingId, setEditingId] = useState<string | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dragId = useRef<string | null>(null);
 
@@ -71,23 +73,30 @@ export function ChapterEditor({
     }
   };
 
-  const onRename = async (c: ChapterData) => {
-    const title = window.prompt("Chapter title", c.title);
-    if (!title || title === c.title) return;
-    setChapters((prev) => prev.map((x) => (x.id === c.id ? { ...x, title } : x)));
-    await renameChapter(c.id, title, bookId);
+  const commitRename = async (c: ChapterData, title: string) => {
+    setEditingId(null);
+    const t = title.trim();
+    if (!t || t === c.title) return;
+    setChapters((prev) => prev.map((x) => (x.id === c.id ? { ...x, title: t } : x)));
+    await renameChapter(c.id, t, bookId);
   };
 
-  const onDelete = async (c: ChapterData) => {
+  const onDelete = (c: ChapterData) => {
     if (chapters.length <= 1) {
-      window.alert("A book needs at least one chapter.");
+      toast.error("A book needs at least one chapter.");
       return;
     }
-    if (!window.confirm(`Delete “${c.title}”?`)) return;
-    const next = chapters.filter((x) => x.id !== c.id);
-    setChapters(next);
-    if (activeId === c.id) setActiveId(next[0]?.id ?? "");
-    await deleteChapter(c.id, bookId);
+    toast(`Delete “${c.title}”?`, {
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          const next = chapters.filter((x) => x.id !== c.id);
+          setChapters(next);
+          if (activeId === c.id) setActiveId(next[0]?.id ?? "");
+          await deleteChapter(c.id, bookId);
+        },
+      },
+    });
   };
 
   const onDrop = async (targetId: string) => {
@@ -126,11 +135,24 @@ export function ChapterEditor({
               )}
             >
               <GripVertical className="size-3.5 shrink-0 cursor-grab text-muted-foreground/50" />
-              <button onClick={() => setActiveId(c.id)} className="min-w-0 flex-1 truncate text-left">
-                {i + 1}. {c.title}
-              </button>
+              {editingId === c.id ? (
+                <input
+                  autoFocus
+                  defaultValue={c.title}
+                  onBlur={(e) => commitRename(c, e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                    else if (e.key === "Escape") setEditingId(null);
+                  }}
+                  className="min-w-0 flex-1 rounded border border-input bg-transparent px-1 py-0.5 text-sm outline-none focus-visible:border-ring"
+                />
+              ) : (
+                <button onClick={() => setActiveId(c.id)} className="min-w-0 flex-1 truncate text-left">
+                  {i + 1}. {c.title}
+                </button>
+              )}
               <button
-                onClick={() => onRename(c)}
+                onClick={() => setEditingId(c.id)}
                 aria-label="Rename"
                 className="opacity-0 transition-opacity group-hover:opacity-100"
               >
