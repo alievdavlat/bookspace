@@ -6,7 +6,9 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { AddToShelf } from "@/components/book/add-to-shelf";
+import { AddToPlaylist } from "@/components/book/add-to-playlist";
 import { ReviewSection, type ReviewItem } from "@/components/book/review-section";
+import { languageName } from "@/lib/languages";
 import type { BookWithAuthor } from "@/lib/types";
 
 export async function generateMetadata({
@@ -53,6 +55,19 @@ export default async function BookPage({
   const avg = reviews.length
     ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
     : null;
+
+  let playlists: { id: string; title: string; has: boolean }[] = [];
+  if (user) {
+    const { data: pls } = await supabase
+      .from("playlists")
+      .select("id, title, playlist_items(book_id)")
+      .eq("owner_id", user.id)
+      .order("created_at", { ascending: false });
+    playlists = (pls ?? []).map((p) => {
+      const row = p as { id: string; title: string; playlist_items: { book_id: string }[] };
+      return { id: row.id, title: row.title, has: (row.playlist_items ?? []).some((i) => i.book_id === book.id) };
+    });
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -108,8 +123,9 @@ export default async function BookPage({
             </div>
 
             {user ? (
-              <div className="mt-4">
+              <div className="mt-4 flex flex-wrap items-center gap-3">
                 <AddToShelf bookId={book.id} />
+                <AddToPlaylist bookId={book.id} playlists={playlists} />
               </div>
             ) : null}
 
@@ -121,7 +137,7 @@ export default async function BookPage({
               <dt className="text-muted-foreground">Pages</dt>
               <dd>{book.page_count || "—"}</dd>
               <dt className="text-muted-foreground">Language</dt>
-              <dd className="uppercase">{book.language}</dd>
+              <dd>{languageName(book.language)}</dd>
             </dl>
           </div>
         </div>
