@@ -9,7 +9,8 @@ import { AddToShelf } from "@/components/book/add-to-shelf";
 import { AddToPlaylist } from "@/components/book/add-to-playlist";
 import { ReviewSection, type ReviewItem } from "@/components/book/review-section";
 import { LikeButton } from "@/components/social/like-button";
-import { Comments, type CommentItem } from "@/components/social/comments";
+import { Comments } from "@/components/social/comments";
+import { loadComments } from "@/lib/comments";
 import { AiTools } from "@/components/ai/ai-tools";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { languageName } from "@/lib/languages";
@@ -73,19 +74,13 @@ export default async function BookPage({
     });
   }
 
-  const [{ count: likeCount }, { data: likedRow }, { data: commentRows }] = await Promise.all([
+  const [{ count: likeCount }, { data: likedRow }, comments] = await Promise.all([
     supabase.from("likes").select("*", { count: "exact", head: true }).eq("target_type", "book").eq("target_id", book.id),
     user
       ? supabase.from("likes").select("id").eq("user_id", user.id).eq("target_type", "book").eq("target_id", book.id).maybeSingle()
       : Promise.resolve({ data: null }),
-    supabase
-      .from("comments")
-      .select("id, body, created_at, user_id, user:profiles!comments_user_id_fkey(username, display_name, avatar_url)")
-      .eq("target_type", "book")
-      .eq("target_id", book.id)
-      .order("created_at", { ascending: false }),
+    loadComments(supabase, "book", book.id, user?.id ?? null),
   ]);
-  const comments = (commentRows ?? []) as unknown as CommentItem[];
 
   let currentShelf: string | null = null;
   if (user) {

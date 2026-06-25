@@ -7,7 +7,8 @@ import { SiteFooter } from "@/components/site-footer";
 import { ReadAloud } from "@/components/read-aloud";
 import { TracingBeam } from "@/components/aceternity/tracing-beam";
 import { LikeButton } from "@/components/social/like-button";
-import { Comments, type CommentItem } from "@/components/social/comments";
+import { Comments } from "@/components/social/comments";
+import { loadComments } from "@/lib/comments";
 import { AiTools } from "@/components/ai/ai-tools";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { cleanHtml } from "@/lib/sanitize";
@@ -54,19 +55,13 @@ export default async function BlogPostPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const [{ count: likeCount }, { data: likedRow }, { data: commentRows }] = await Promise.all([
+  const [{ count: likeCount }, { data: likedRow }, comments] = await Promise.all([
     supabase.from("likes").select("*", { count: "exact", head: true }).eq("target_type", "blog").eq("target_id", post.id),
     user
       ? supabase.from("likes").select("id").eq("user_id", user.id).eq("target_type", "blog").eq("target_id", post.id).maybeSingle()
       : Promise.resolve({ data: null }),
-    supabase
-      .from("comments")
-      .select("id, body, created_at, user_id, user:profiles!comments_user_id_fkey(username, display_name, avatar_url)")
-      .eq("target_type", "blog")
-      .eq("target_id", post.id)
-      .order("created_at", { ascending: false }),
+    loadComments(supabase, "blog", post.id, user?.id ?? null),
   ]);
-  const comments = (commentRows ?? []) as unknown as CommentItem[];
 
   return (
     <div className="flex min-h-screen flex-col">
