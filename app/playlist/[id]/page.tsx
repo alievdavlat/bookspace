@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { BookCard } from "@/components/book-card";
+import { DeletePlaylistButton, RemoveFromPlaylistButton } from "@/components/playlist/playlist-controls";
 import type { BookWithAuthor } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Playlist · Bookspace" };
@@ -38,6 +39,11 @@ export default async function PlaylistPage({
     .filter(Boolean);
   const owner = playlist.owner as unknown as { username: string | null; display_name: string | null } | null;
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isOwner = !!user && user.id === playlist.owner_id;
+
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
@@ -57,12 +63,24 @@ export default async function PlaylistPage({
           <p className="mt-3 max-w-2xl text-muted-foreground">{playlist.description}</p>
         ) : null}
 
+        {isOwner ? (
+          <div className="mt-5">
+            <DeletePlaylistButton
+              playlistId={playlist.id}
+              redirectTo={owner?.username ? `/author/${owner.username}` : "/library"}
+            />
+          </div>
+        ) : null}
+
         {books.length === 0 ? (
           <p className="mt-10 text-muted-foreground">This playlist is empty.</p>
         ) : (
           <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
             {books.map((b) => (
-              <BookCard key={b.id} book={b} />
+              <div key={b.id}>
+                <BookCard book={b} />
+                {isOwner ? <RemoveFromPlaylistButton playlistId={playlist.id} bookId={b.id} /> : null}
+              </div>
             ))}
           </div>
         )}

@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { BookCard } from "@/components/book-card";
+import { FocusBookCards } from "@/components/aceternity/focus-cards";
 import { ExploreSidebar } from "@/components/explore/explore-sidebar";
 import { ActiveFilters } from "@/components/explore/active-filters";
 import { listGenreNames } from "@/lib/actions/genres";
@@ -103,11 +103,7 @@ export default async function ExplorePage({
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3">
-                {books.map((book) => (
-                  <BookCard key={book.id} book={book} />
-                ))}
-              </div>
+              <FocusBookCards books={books} />
             )}
           </div>
         </div>

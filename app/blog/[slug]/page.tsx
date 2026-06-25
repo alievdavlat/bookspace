@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { ReadAloud } from "@/components/read-aloud";
+import { TracingBeam } from "@/components/aceternity/tracing-beam";
 
 export async function generateMetadata({
   params,
@@ -59,10 +60,12 @@ export default async function BlogPostPage({
           </p>
           <ReadAloud text={plainText} />
         </div>
-        <article
-          className="prose prose-stone dark:prose-invert mt-8 max-w-none"
-          dangerouslySetInnerHTML={{ __html: post.content?.html ?? "" }}
-        />
+        <TracingBeam className="mt-8">
+          <article
+            className="prose prose-slate dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: post.content?.html ?? "" }}
+          />
+        </TracingBeam>
       </main>
       <SiteFooter />
     </div>
