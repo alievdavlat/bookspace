@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { ListMusic } from "lucide-react";
 import { BookCard } from "@/components/book-card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { createPlaylist } from "@/lib/actions/playlists";
 import type { BookWithAuthor } from "@/lib/types";
 
 export const metadata: Metadata = { title: "My library · Bookspace" };
@@ -38,6 +42,17 @@ export default async function LibraryPage() {
         .select(`shelf_id, book:books!shelf_items_book_id_fkey(${BOOK_COLS})`)
         .in("shelf_id", shelfIds)
     : { data: [] as { shelf_id: string; book: BookWithAuthor }[] };
+
+  // Playlists
+  const { data: playlistRows } = await supabase
+    .from("playlists")
+    .select("id, title, visibility, playlist_items(count)")
+    .eq("owner_id", user.id)
+    .order("created_at", { ascending: false });
+  const playlists = (playlistRows ?? []).map((p) => {
+    const row = p as { id: string; title: string; visibility: string; playlist_items: { count: number }[] };
+    return { id: row.id, title: row.title, visibility: row.visibility, count: row.playlist_items?.[0]?.count ?? 0 };
+  });
 
   const continueReading = (progress ?? [])
     .map((p) => (p as unknown as { book: BookWithAuthor }).book)
@@ -78,6 +93,45 @@ export default async function LibraryPage() {
           })}
         </div>
       )}
+
+      {/* Playlists */}
+      <section className="mt-14">
+        <h2 className="font-serif text-2xl font-semibold">Playlists</h2>
+        <form action={createPlaylist} className="mt-4 flex max-w-md gap-2">
+          <Input name="title" required placeholder="New playlist name" />
+          <select
+            name="visibility"
+            defaultValue="public"
+            className="rounded-md border border-input bg-transparent px-2 text-sm outline-none focus-visible:border-ring"
+          >
+            <option value="public">Public</option>
+            <option value="private">Private</option>
+          </select>
+          <Button type="submit">Create</Button>
+        </form>
+
+        {playlists.length === 0 ? (
+          <p className="mt-4 text-sm text-muted-foreground">
+            No playlists yet. Create one above, or use “Save to playlist” on any book.
+          </p>
+        ) : (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {playlists.map((p) => (
+              <Link
+                key={p.id}
+                href={`/playlist/${p.id}`}
+                className="group rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/40"
+              >
+                <ListMusic className="size-5 text-primary" />
+                <p className="mt-3 font-medium group-hover:text-primary">{p.title}</p>
+                <p className="text-xs text-muted-foreground">
+                  {p.count} books · {p.visibility}
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
     </>
   );
 }

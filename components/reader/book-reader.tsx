@@ -3,6 +3,7 @@
 import type { ForwardRefExoticComponent, ReactNode, Ref } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { Bookmark } from "lucide-react";
 import HTMLFlipBookImport from "react-pageflip";
 import * as pdfjsLib from "pdfjs-dist";
 import { createClient } from "@/lib/supabase/client";
@@ -43,7 +44,50 @@ export function BookReader({
   const [pct, setPct] = useState(0);
   const [theme, setTheme] = useState<ThemeKey>("sepia");
   const [current, setCurrent] = useState(startPage);
-  const bookRef = useRef<{ pageFlip: () => { flipNext: () => void; flipPrev: () => void } } | null>(null);
+  const [bookmarks, setBookmarks] = useState<{ id: string; page: number }[]>([]);
+  const [bmOpen, setBmOpen] = useState(false);
+  const bookRef = useRef<{
+    pageFlip: () => { flipNext: () => void; flipPrev: () => void; flip: (p: number) => void };
+  } | null>(null);
+
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("bookmarks")
+        .select("id, position")
+        .eq("user_id", userId)
+        .eq("book_id", bookId);
+      setBookmarks(
+        (data ?? [])
+          .map((b) => ({ id: b.id as string, page: parseInt((b.position as string) ?? "0", 10) || 0 }))
+          .sort((a, b) => a.page - b.page)
+      );
+    })();
+  }, [userId, bookId]);
+
+  const addBookmark = useCallback(async () => {
+    if (bookmarks.some((b) => b.page === current)) return;
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("bookmarks")
+      .insert({ user_id: userId, book_id: bookId, position: String(current), label: `Page ${current + 1}` })
+      .select("id")
+      .single();
+    if (data) setBookmarks((prev) => [...prev, { id: data.id, page: current }].sort((a, b) => a.page - b.page));
+  }, [bookmarks, current, userId, bookId]);
+
+  const removeBookmark = useCallback(async (id: string) => {
+    const supabase = createClient();
+    await supabase.from("bookmarks").delete().eq("id", id);
+    setBookmarks((prev) => prev.filter((b) => b.id !== id));
+  }, []);
+
+  const jumpTo = useCallback((page: number) => {
+    bookRef.current?.pageFlip().flip(page);
+    setBmOpen(false);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -122,7 +166,37 @@ export function BookReader({
           ← Back
         </Link>
         <span className="line-clamp-1 font-serif text-base">{title}</span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* Bookmarks */}
+          <div className="relative">
+            <button
+              onClick={addBookmark}
+              aria-label="Bookmark this page"
+              title="Bookmark this page"
+              className="opacity-80 hover:opacity-100"
+            >
+              <Bookmark className={`size-4 ${bookmarks.some((b) => b.page === current) ? "fill-current text-primary" : ""}`} />
+            </button>
+            {bookmarks.length > 0 ? (
+              <>
+                <button onClick={() => setBmOpen((v) => !v)} className="ml-1 text-xs opacity-70 hover:opacity-100">
+                  {bookmarks.length}
+                </button>
+                {bmOpen ? (
+                  <div className="absolute right-0 top-full z-30 mt-2 w-44 rounded-lg border border-black/10 bg-white p-1 text-sm text-[#2b2118] shadow-xl">
+                    {bookmarks.map((b) => (
+                      <div key={b.id} className="flex items-center justify-between rounded px-2 py-1 hover:bg-black/5">
+                        <button onClick={() => jumpTo(b.page)}>Page {b.page + 1}</button>
+                        <button onClick={() => removeBookmark(b.id)} aria-label="Remove" className="text-red-500">
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </>
+            ) : null}
+          </div>
           {(Object.keys(THEMES) as ThemeKey[]).map((k) => (
             <button
               key={k}
