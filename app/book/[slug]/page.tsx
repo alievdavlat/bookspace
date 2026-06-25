@@ -11,6 +11,7 @@ import { ReviewSection, type ReviewItem } from "@/components/book/review-section
 import { LikeButton } from "@/components/social/like-button";
 import { Comments, type CommentItem } from "@/components/social/comments";
 import { AiTools } from "@/components/ai/ai-tools";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { languageName } from "@/lib/languages";
 import type { BookWithAuthor } from "@/lib/types";
 
@@ -109,7 +110,14 @@ export default async function BookPage({
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-12">
-        <div className="grid gap-10 md:grid-cols-[260px_1fr]">
+        <Breadcrumb
+          items={[
+            { label: "Explore", href: "/explore" },
+            ...(book.genres?.[0] ? [{ label: book.genres[0], href: `/explore?genre=${book.genres[0]}` }] : []),
+            { label: book.title },
+          ]}
+        />
+        <div className="mt-8 grid gap-10 md:grid-cols-[260px_1fr]">
           {/* Cover */}
           <div className="bs-cover mx-auto aspect-[2/3] w-[220px] overflow-hidden rounded-xl border border-border bg-secondary shadow-md md:w-full">
             {book.cover_url ? (

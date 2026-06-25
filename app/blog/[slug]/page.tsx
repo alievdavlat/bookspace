@@ -9,6 +9,7 @@ import { TracingBeam } from "@/components/aceternity/tracing-beam";
 import { LikeButton } from "@/components/social/like-button";
 import { Comments, type CommentItem } from "@/components/social/comments";
 import { AiTools } from "@/components/ai/ai-tools";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { cleanHtml } from "@/lib/sanitize";
 
 export async function generateMetadata({
@@ -71,9 +72,7 @@ export default async function BlogPostPage({
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">
-        <Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground">
-          ← All posts
-        </Link>
+        <Breadcrumb items={[{ label: "Blog", href: "/blog" }, { label: post.title }]} />
         <h1 className="mt-4 font-serif text-4xl font-semibold">{post.title}</h1>
         <div className="mt-2 flex items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">

@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { BookCard } from "@/components/book-card";
 import { DeletePlaylistButton, RemoveFromPlaylistButton } from "@/components/playlist/playlist-controls";
+import { Breadcrumb } from "@/components/breadcrumb";
 import type { BookWithAuthor } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Playlist · Bookspace" };
@@ -48,7 +49,15 @@ export default async function PlaylistPage({
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-12">
-        <p className="text-sm text-primary">Playlist</p>
+        <Breadcrumb
+          items={[
+            ...(owner?.username
+              ? [{ label: owner.display_name || owner.username, href: `/author/${owner.username}` }]
+              : []),
+            { label: playlist.title },
+          ]}
+        />
+        <p className="mt-6 text-sm text-primary">Playlist</p>
         <h1 className="mt-1 font-serif text-4xl font-semibold">{playlist.title}</h1>
         {owner?.username ? (
           <p className="mt-2 text-sm text-muted-foreground">
