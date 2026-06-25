@@ -8,6 +8,7 @@ import { ReadAloud } from "@/components/read-aloud";
 import { TracingBeam } from "@/components/aceternity/tracing-beam";
 import { LikeButton } from "@/components/social/like-button";
 import { Comments, type CommentItem } from "@/components/social/comments";
+import { AiTools } from "@/components/ai/ai-tools";
 import { cleanHtml } from "@/lib/sanitize";
 
 export async function generateMetadata({
@@ -90,6 +91,12 @@ export default async function BlogPostPage({
             <ReadAloud text={plainText} />
           </div>
         </div>
+        {plainText.length > 80 ? (
+          <div className="mt-6">
+            <AiTools text={plainText} label="AI · summarize or translate this post" />
+          </div>
+        ) : null}
+
         <TracingBeam className="mt-8">
           <article
             className="prose prose-slate dark:prose-invert max-w-none"

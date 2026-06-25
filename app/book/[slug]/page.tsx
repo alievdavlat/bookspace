@@ -10,6 +10,7 @@ import { AddToPlaylist } from "@/components/book/add-to-playlist";
 import { ReviewSection, type ReviewItem } from "@/components/book/review-section";
 import { LikeButton } from "@/components/social/like-button";
 import { Comments, type CommentItem } from "@/components/social/comments";
+import { AiTools } from "@/components/ai/ai-tools";
 import { languageName } from "@/lib/languages";
 import type { BookWithAuthor } from "@/lib/types";
 
@@ -153,6 +154,12 @@ export default async function BookPage({
             ) : null}
 
             <p className="mt-8 leading-relaxed text-foreground/90">{book.description}</p>
+
+            {book.description && book.description.length > 80 ? (
+              <div className="mt-6">
+                <AiTools text={book.description} label="AI · about this book" />
+              </div>
+            ) : null}
 
             <dl className="mt-8 grid max-w-sm grid-cols-2 gap-y-2 text-sm">
               <dt className="text-muted-foreground">Format</dt>
