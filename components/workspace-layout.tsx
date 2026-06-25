@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { SidebarShell } from "@/components/sidebar-shell";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SearchCommand } from "@/components/search/search-command";
+import { NotificationBell } from "@/components/notification-bell";
 import { UserMenu, type MenuProfile } from "@/components/user-menu";
 
 export async function WorkspaceLayout({
@@ -44,6 +45,7 @@ export async function WorkspaceLayout({
       topRight={
         <>
           <SearchCommand />
+          <NotificationBell />
           <ThemeToggle />
           <UserMenu profile={profile} />
         </>

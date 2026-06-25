@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { notify } from "@/lib/notify";
 
 export type ActionState = { error?: string; ok?: boolean };
 
@@ -125,6 +126,18 @@ export async function toggleFollow(formData: FormData): Promise<void> {
     await supabase.from("follows").delete().eq("follower_id", user.id).eq("following_id", targetId);
   } else {
     await supabase.from("follows").insert({ follower_id: user.id, following_id: targetId });
+    const { data: me } = await supabase
+      .from("profiles")
+      .select("username, display_name")
+      .eq("id", user.id)
+      .single();
+    await notify(supabase, {
+      userId: targetId,
+      actorId: user.id,
+      type: "follow",
+      href: me?.username ? `/author/${me.username}` : null,
+      body: "started following you",
+    });
   }
   revalidatePath(`/author/${username}`);
 }

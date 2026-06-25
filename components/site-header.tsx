@@ -5,6 +5,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Brand } from "@/components/brand";
 import { SearchCommand } from "@/components/search/search-command";
 import { MobileNav } from "@/components/mobile-nav";
+import { NotificationBell } from "@/components/notification-bell";
 import { UserMenu, type MenuProfile } from "@/components/user-menu";
 
 const NAV = [
@@ -52,7 +53,10 @@ export async function SiteHeader() {
           <SearchCommand />
           <ThemeToggle />
           {profile ? (
-            <UserMenu profile={profile} />
+            <>
+              <NotificationBell />
+              <UserMenu profile={profile} />
+            </>
           ) : (
             <>
               <Button render={<Link href="/sign-in" />} nativeButton={false} variant="ghost" size="sm">
