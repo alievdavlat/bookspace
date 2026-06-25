@@ -2,7 +2,6 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { GENRES } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -28,7 +27,7 @@ const SORTS = [
   { v: "popular", l: "Most read" },
 ];
 
-export function ExploreSidebar() {
+export function ExploreSidebar({ genres }: { genres: string[] }) {
   const router = useRouter();
   const sp = useSearchParams();
   const [q, setQ] = useState(sp.get("q") ?? "");
@@ -95,7 +94,7 @@ export function ExploreSidebar() {
       </Group>
 
       <Group title="Genre">
-        {GENRES.map((g) => (
+        {genres.map((g) => (
           <Check key={g} label={g} on={checked("genre", g)} onToggle={() => toggle("genre", g)} />
         ))}
       </Group>

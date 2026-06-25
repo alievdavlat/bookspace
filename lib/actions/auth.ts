@@ -27,10 +27,10 @@ export async function signUp(
   _prev: AuthState,
   formData: FormData
 ): Promise<AuthState> {
-  const email = String(formData.get("email") ?? "");
+  const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const username = String(formData.get("username") ?? "");
-  const displayName = String(formData.get("display_name") ?? username);
+  const username = String(formData.get("username") ?? "").trim();
+  const displayName = String(formData.get("display_name") ?? username).trim() || username;
 
   if (username.length < 3) return { error: "Username must be at least 3 characters." };
   if (password.length < 6) return { error: "Password must be at least 6 characters." };
