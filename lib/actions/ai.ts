@@ -10,7 +10,7 @@ async function complete(prompt: string): Promise<string> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         messages: [{ role: "user", content: prompt }],
-        model: "mistral",
+        model: "openai-fast",
         private: true,
       }),
     });
