@@ -52,79 +52,79 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Bookspace — warm editorial palette (light) */
+/* Bookspace — blue / slate design system (light) */
 :root {
-  --background: #f4ece0;
-  --foreground: #272019;
-  --card: #fffdf9;
-  --card-foreground: #272019;
-  --popover: #fffdf9;
-  --popover-foreground: #272019;
-  --primary: #b4502a;
-  --primary-foreground: #fff7f0;
-  --secondary: #f8f1e7;
-  --secondary-foreground: #2b2118;
-  --muted: #ece1d1;
-  --muted-foreground: #8c7d6b;
-  --accent: #f1e6d6;
-  --accent-foreground: #b4502a;
-  --destructive: #c0392b;
-  --border: #e4d8c6;
-  --input: #e4d8c6;
-  --ring: #b4502a;
-  --gold: #a9803a;
-  --green: #4d6b53;
-  --chart-1: #b4502a;
-  --chart-2: #a9803a;
-  --chart-3: #4d6b53;
-  --chart-4: #c8743f;
-  --chart-5: #5d5043;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #2563eb;
+  --primary-foreground: #f8fafc;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #eff6ff;
+  --accent-foreground: #1d4ed8;
+  --destructive: #dc2626;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #2563eb;
+  --gold: #f59e0b;
+  --green: #10b981;
+  --chart-1: #2563eb;
+  --chart-2: #3b82f6;
+  --chart-3: #60a5fa;
+  --chart-4: #1d4ed8;
+  --chart-5: #93c5fd;
   --radius: 0.75rem;
-  --sidebar: #fffdf9;
-  --sidebar-foreground: #272019;
-  --sidebar-primary: #b4502a;
-  --sidebar-primary-foreground: #fff7f0;
-  --sidebar-accent: #f1e6d6;
-  --sidebar-accent-foreground: #b4502a;
-  --sidebar-border: #e4d8c6;
-  --sidebar-ring: #b4502a;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #f8fafc;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #1d4ed8;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #2563eb;
 }
 
-/* Bookspace — warm editorial palette (dark) */
+/* Bookspace — blue / slate design system (dark) */
 .dark {
-  --background: #15110d;
-  --foreground: #f0e7d8;
-  --card: #1e1811;
-  --card-foreground: #f0e7d8;
-  --popover: #1e1811;
-  --popover-foreground: #f0e7d8;
-  --primary: #c8743f;
-  --primary-foreground: #1a130c;
-  --secondary: #2a2018;
-  --secondary-foreground: #f0e7d8;
-  --muted: #251d15;
-  --muted-foreground: #a08d77;
-  --accent: #2f2418;
-  --accent-foreground: #e9c8a0;
-  --destructive: #e5645a;
-  --border: #34291d;
-  --input: #3a2f21;
-  --ring: #c8743f;
-  --gold: #cba85f;
-  --green: #7fa285;
-  --chart-1: #c8743f;
-  --chart-2: #cba85f;
-  --chart-3: #7fa285;
-  --chart-4: #b4502a;
-  --chart-5: #a08d77;
-  --sidebar: #1a140e;
-  --sidebar-foreground: #f0e7d8;
-  --sidebar-primary: #c8743f;
-  --sidebar-primary-foreground: #1a130c;
-  --sidebar-accent: #2f2418;
-  --sidebar-accent-foreground: #e9c8a0;
-  --sidebar-border: #34291d;
-  --sidebar-ring: #c8743f;
+  --background: #020617;
+  --foreground: #e8eef9;
+  --card: #0e1627;
+  --card-foreground: #e8eef9;
+  --popover: #0e1627;
+  --popover-foreground: #e8eef9;
+  --primary: #3b82f6;
+  --primary-foreground: #061021;
+  --secondary: #1e293b;
+  --secondary-foreground: #e8eef9;
+  --muted: #16203a;
+  --muted-foreground: #94a3b8;
+  --accent: #14233f;
+  --accent-foreground: #93c5fd;
+  --destructive: #ef4444;
+  --border: #1e2a44;
+  --input: #243149;
+  --ring: #3b82f6;
+  --gold: #fbbf24;
+  --green: #34d399;
+  --chart-1: #3b82f6;
+  --chart-2: #60a5fa;
+  --chart-3: #93c5fd;
+  --chart-4: #2563eb;
+  --chart-5: #1d4ed8;
+  --sidebar: #0a1322;
+  --sidebar-foreground: #e8eef9;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #061021;
+  --sidebar-accent: #16203a;
+  --sidebar-accent-foreground: #93c5fd;
+  --sidebar-border: #1e2a44;
+  --sidebar-ring: #3b82f6;
 }
 
 @layer base {
