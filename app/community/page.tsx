@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PageShell } from "@/components/page-shell";
-import { BookCard } from "@/components/book-card";
+import { FocusBookCards } from "@/components/aceternity/focus-cards";
 import { FollowButton } from "@/components/author/follow-button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import type { BookWithAuthor } from "@/lib/types";
@@ -219,10 +219,8 @@ export default async function CommunityPage() {
         {trending.length === 0 ? (
           <p className="mt-4 text-sm text-muted-foreground">Nothing here yet.</p>
         ) : (
-          <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
-            {trending.map((b) => (
-              <BookCard key={b.id} book={b} />
-            ))}
+          <div className="mt-6">
+            <FocusBookCards books={trending} />
           </div>
         )}
       </section>
