@@ -1,21 +1,16 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { PageShell } from "@/components/page-shell";
 import { WriteForm } from "@/components/studio/write-form";
 
 export const metadata: Metadata = { title: "Write a book · Bookspace" };
 
-export default async function WriteBookPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/sign-in?redirect=/studio/write/new");
-
+export default function WriteBookPage() {
   return (
-    <PageShell title="Write a book" subtitle="Compose your book online and publish it to the community.">
+    <>
+      <h1 className="font-serif text-3xl font-semibold">Write a book</h1>
+      <p className="mt-1 text-muted-foreground">
+        Compose your book online and publish it to the community.
+      </p>
       <WriteForm />
-    </PageShell>
+    </>
   );
 }

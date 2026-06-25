@@ -15,6 +15,7 @@ export type MenuProfile = {
   username: string | null;
   display_name: string | null;
   avatar_url: string | null;
+  role: string | null;
 };
 
 function initials(name: string) {
@@ -56,6 +57,12 @@ export function UserMenu({ profile }: { profile: MenuProfile }) {
           Profile
         </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/settings" />}>Settings</DropdownMenuItem>
+        {profile.role === "admin" ? (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem render={<Link href="/admin" />}>Admin</DropdownMenuItem>
+          </>
+        ) : null}
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onClick={() => signOut()}>
           Sign out

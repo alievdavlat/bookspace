@@ -21,10 +21,10 @@ export async function SiteHeader() {
   if (user) {
     const { data } = await supabase
       .from("profiles")
-      .select("username, display_name, avatar_url")
+      .select("username, display_name, avatar_url, role")
       .eq("id", user.id)
       .single();
-    profile = data ?? { username: null, display_name: null, avatar_url: null };
+    profile = data ?? { username: null, display_name: null, avatar_url: null, role: null };
   }
 
   return (
