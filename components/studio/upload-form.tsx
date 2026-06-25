@@ -4,7 +4,6 @@ import { useActionState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { GENRES } from "@/lib/types";
 import { createUploadedBook, type BookFormState } from "@/lib/actions/books";
 
 const initial: BookFormState = {};
@@ -12,7 +11,7 @@ const initial: BookFormState = {};
 const fieldClass =
   "w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50";
 
-export function UploadForm() {
+export function UploadForm({ genres }: { genres: string[] }) {
   const [state, formAction, pending] = useActionState(createUploadedBook, initial);
 
   return (
@@ -55,7 +54,7 @@ export function UploadForm() {
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 text-sm font-medium">Genres</legend>
         <div className="flex flex-wrap gap-3">
-          {GENRES.map((g) => (
+          {genres.map((g) => (
             <label key={g} className="flex items-center gap-1.5 text-sm">
               <input type="checkbox" name="genres" value={g} className="accent-primary" />
               {g}

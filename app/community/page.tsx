@@ -9,9 +9,6 @@ import type { BookWithAuthor } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Community · Bookspace" };
 
-const BOOK_COLS =
-  "id, author_id, title, slug, author_name, cover_url, genres, type, format, status, visibility, page_count, views, created_at, author:profiles!books_author_id_fkey(username, display_name)";
-
 type ProfileRow = {
   id: string;
   username: string | null;
@@ -60,11 +57,11 @@ export default async function CommunityPage() {
         .order("created_at", { ascending: false })
         .limit(6),
       supabase
-        .from("books")
-        .select(BOOK_COLS)
-        .eq("status", "published")
-        .eq("visibility", "public")
-        .order("views", { ascending: false })
+        .from("book_trending")
+        .select(
+          "id, author_id, title, slug, author_name, cover_url, genres, type, format, status, visibility, page_count, views, created_at"
+        )
+        .order("trending_score", { ascending: false })
         .limit(4),
     ]);
 

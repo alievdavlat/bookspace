@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { BookCard } from "@/components/book-card";
 import { ExploreSidebar } from "@/components/explore/explore-sidebar";
 import { ActiveFilters } from "@/components/explore/active-filters";
+import { listGenreNames } from "@/lib/actions/genres";
 import type { BookWithAuthor } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Explore · Bookspace" };
@@ -47,6 +48,7 @@ export default async function ExplorePage({
 
   const { data } = await query;
   const books = (data ?? []) as unknown as BookWithAuthor[];
+  const genreNames = await listGenreNames();
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -61,7 +63,7 @@ export default async function ExplorePage({
           {/* Filters */}
           <div className="lg:sticky lg:top-24 lg:self-start">
             <Suspense fallback={<div className="text-sm text-muted-foreground">Loading filters…</div>}>
-              <ExploreSidebar />
+              <ExploreSidebar genres={genreNames} />
             </Suspense>
           </div>
 

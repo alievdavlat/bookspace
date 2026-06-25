@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Brand } from "@/components/brand";
+import { SearchCommand } from "@/components/search/search-command";
 import { UserMenu, type MenuProfile } from "@/components/user-menu";
 
 const NAV = [
@@ -46,6 +47,7 @@ export async function SiteHeader() {
         </div>
 
         <div className="flex items-center gap-2">
+          <SearchCommand />
           <ThemeToggle />
           {profile ? (
             <UserMenu profile={profile} />
