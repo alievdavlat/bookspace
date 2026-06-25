@@ -63,11 +63,24 @@ export function UploadForm({ genres }: { genres: string[] }) {
       <div className="flex flex-col gap-2">
         <Label htmlFor="cover">Cover image (optional)</Label>
         <input id="cover" name="cover" type="file" accept="image/*" className={fieldClass} />
+        <input
+          name="cover_url"
+          type="url"
+          placeholder="…or paste a cover image URL"
+          className={fieldClass}
+        />
       </div>
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="file">Book file (PDF or EPUB)</Label>
-        <input id="file" name="file" type="file" accept=".pdf,.epub" required className={fieldClass} />
+        <input id="file" name="file" type="file" accept=".pdf,.epub" className={fieldClass} />
+        <input
+          name="file_url"
+          type="url"
+          placeholder="…or paste a direct PDF/EPUB URL"
+          className={fieldClass}
+        />
+        <p className="text-xs text-muted-foreground">Upload a file or provide a public URL.</p>
       </div>
 
       {state.error && <p className="text-sm text-destructive">{state.error}</p>}

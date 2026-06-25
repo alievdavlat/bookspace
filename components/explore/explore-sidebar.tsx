@@ -2,6 +2,8 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import { ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -105,7 +107,7 @@ export function ExploreSidebar({
         </Select>
       </Group>
 
-      <Group title="Genre">
+      <Group title="Genre" defaultOpen={false}>
         {genres.map((g) => (
           <Check key={g} label={g} on={checked("genre", g)} onToggle={() => toggle("genre", g)} />
         ))}
@@ -124,7 +126,7 @@ export function ExploreSidebar({
       </Group>
 
       {languages.length > 0 ? (
-        <Group title="Language">
+        <Group title="Language" defaultOpen={false}>
           {languages.map((l) => (
             <Check key={l.code} label={l.name} on={checked("lang", l.code)} onToggle={() => toggle("lang", l.code)} />
           ))}
@@ -140,11 +142,27 @@ export function ExploreSidebar({
   );
 }
 
-function Group({ title, children }: { title: string; children: React.ReactNode }) {
+function Group({
+  title,
+  children,
+  defaultOpen = true,
+}: {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
-    <div>
-      <h3 className="mb-3 text-sm font-semibold">{title}</h3>
-      <div className="space-y-2.5">{children}</div>
+    <div className="border-b border-border/60 pb-3">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between py-1 text-sm font-semibold"
+      >
+        {title}
+        <ChevronDown className={cn("size-4 text-muted-foreground transition-transform", open && "rotate-180")} />
+      </button>
+      {open ? <div className="mt-3 space-y-2.5">{children}</div> : null}
     </div>
   );
 }

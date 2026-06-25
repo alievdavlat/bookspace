@@ -32,27 +32,39 @@ export async function createUploadedBook(
   const genres = formData.getAll("genres").map(String).filter(Boolean);
   const file = formData.get("file") as File | null;
   const cover = formData.get("cover") as File | null;
+  const fileUrlInput = String(formData.get("file_url") ?? "").trim();
+  const coverUrlInput = String(formData.get("cover_url") ?? "").trim();
 
   if (title.length < 2) return { error: "Title is required." };
-  if (!file || file.size === 0) return { error: "Please choose a PDF or EPUB file." };
-
-  const ext = (file.name.split(".").pop() ?? "").toLowerCase();
-  if (ext !== "pdf" && ext !== "epub") {
-    return { error: "Only PDF or EPUB files are supported." };
+  const hasFile = file && file.size > 0;
+  if (!hasFile && !fileUrlInput) {
+    return { error: "Choose a PDF/EPUB file or paste a file URL." };
   }
-  const format = ext === "epub" ? "epub" : "pdf";
 
   const slug = `${slugify(title)}-${crypto.randomUUID().slice(0, 6)}`;
+  let filePath: string;
+  let format: "pdf" | "epub";
 
-  // Upload the book file (private bucket; path stored, signed at read time).
-  const filePath = `${user.id}/${slug}.${ext}`;
-  const { error: fileErr } = await supabase.storage
-    .from("book-files")
-    .upload(filePath, file, { upsert: true, contentType: file.type });
-  if (fileErr) return { error: `File upload failed: ${fileErr.message}` };
+  if (hasFile) {
+    const ext = (file.name.split(".").pop() ?? "").toLowerCase();
+    if (ext !== "pdf" && ext !== "epub") {
+      return { error: "Only PDF or EPUB files are supported." };
+    }
+    format = ext === "epub" ? "epub" : "pdf";
+    filePath = `${user.id}/${slug}.${ext}`;
+    const { error: fileErr } = await supabase.storage
+      .from("book-files")
+      .upload(filePath, file, { upsert: true, contentType: file.type });
+    if (fileErr) return { error: `File upload failed: ${fileErr.message}` };
+  } else {
+    // External URL: store as-is; reader uses it directly.
+    const ext = (fileUrlInput.split(".").pop() ?? "").toLowerCase();
+    format = ext === "epub" ? "epub" : "pdf";
+    filePath = fileUrlInput;
+  }
 
-  // Optional cover (public bucket).
-  let coverUrl: string | null = null;
+  // Optional cover (uploaded file or URL).
+  let coverUrl: string | null = coverUrlInput || null;
   if (cover && cover.size > 0) {
     const cext = (cover.name.split(".").pop() ?? "jpg").toLowerCase();
     const coverPath = `${user.id}/${slug}.${cext}`;

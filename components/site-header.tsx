@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Brand } from "@/components/brand";
 import { SearchCommand } from "@/components/search/search-command";
+import { MobileNav } from "@/components/mobile-nav";
 import { UserMenu, type MenuProfile } from "@/components/user-menu";
 
 const NAV = [
@@ -31,7 +32,8 @@ export async function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6">
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-2 md:gap-8">
+          <MobileNav items={NAV} loggedIn={!!profile} />
           <Brand />
           <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
             {NAV.map((n) => (

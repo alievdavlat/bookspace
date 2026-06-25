@@ -81,10 +81,13 @@ export default async function ReadPage({
     );
   }
 
-  // Signed URL for the private book file.
-  const { data: signed } = await supabase.storage
-    .from("book-files")
-    .createSignedUrl(book.file_url, 60 * 60);
+  // External URL → use directly; otherwise sign the private storage path.
+  const isExternal = !!book.file_url && /^https?:\/\//.test(book.file_url);
+  const signed = isExternal
+    ? { signedUrl: book.file_url as string }
+    : (
+        await supabase.storage.from("book-files").createSignedUrl(book.file_url, 60 * 60)
+      ).data;
 
   // Resume from saved progress.
   const { data: progress } = await supabase
