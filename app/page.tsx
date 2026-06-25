@@ -1,8 +1,12 @@
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Reveal } from "@/components/reveal";
+import { AuroraBackground } from "@/components/aceternity/aurora-background";
+import { Marquee } from "@/components/aceternity/marquee";
+import { GradientButton } from "@/components/aceternity/gradient-button";
 
 const STEPS = [
   { n: 1, icon: "🔎", title: "Discover", body: "Browse a community library and find your next read by genre, language or mood." },
@@ -24,25 +28,27 @@ const STATS = [
   { value: "Read · Write", label: "All in one space" },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: covers } = await supabase
+    .from("books")
+    .select("title, slug, cover_url")
+    .eq("status", "published")
+    .eq("visibility", "public")
+    .not("cover_url", "is", null)
+    .limit(14);
+  const coverList = (covers ?? []) as { title: string; slug: string; cover_url: string }[];
+
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
 
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div
-          aria-hidden
-          className="bs-aurora pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[820px] -translate-x-1/2 rounded-full opacity-50 blur-3xl"
-          style={{
-            background:
-              "radial-gradient(closest-side, var(--primary), transparent 70%), radial-gradient(closest-side, var(--gold), transparent 70%)",
-          }}
-        />
+      <AuroraBackground>
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 lg:grid-cols-2 lg:py-28">
           <div className="flex flex-col items-start gap-6">
-            <span className="rounded-full border border-border bg-secondary/70 px-4 py-1.5 text-xs font-medium text-muted-foreground">
-              📖 Free forever · A community library
+            <span className="rounded-full border border-border bg-secondary/70 px-4 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur">
+              Free forever · A community library
             </span>
             <h1 className="font-serif text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
               Read, write and share — all in one space
@@ -52,21 +58,17 @@ export default function Home() {
               online, and build a community of fellow readers.
             </p>
             <div className="flex flex-wrap items-center gap-3">
-              <Button render={<Link href="/explore" />} nativeButton={false} size="lg">
-                Explore books
-              </Button>
+              <GradientButton href="/explore">Explore books</GradientButton>
               <Button render={<Link href="/sign-up" />} nativeButton={false} size="lg" variant="outline">
-                ▶ Get started
+                Get started
               </Button>
             </div>
           </div>
 
           {/* Reader preview card */}
           <Reveal delay={0.1}>
-            <div className="bs-float mx-auto w-full max-w-sm rounded-2xl border border-border bg-card p-7 shadow-[var(--shadow,0_18px_50px_-24px_rgba(60,40,20,.45))]">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                Chapter One
-              </p>
+            <div className="bs-float mx-auto w-full max-w-sm rounded-2xl border border-border bg-card/80 p-7 shadow-2xl backdrop-blur">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Chapter One</p>
               <h3 className="mt-2 font-serif text-2xl font-semibold">Between the lines</h3>
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
                 The library held its breath as evening light slipped through the
@@ -82,20 +84,37 @@ export default function Home() {
             </div>
           </Reveal>
         </div>
-      </section>
+      </AuroraBackground>
+
+      {/* Cover marquee */}
+      {coverList.length > 0 ? (
+        <section className="border-y border-border/60 bg-secondary/20 py-8">
+          <p className="mb-6 text-center text-sm font-medium text-muted-foreground">From the library</p>
+          <Marquee durationSec={45}>
+            {coverList.map((b) => (
+              <Link key={b.slug} href={`/book/${b.slug}`} className="shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={b.cover_url}
+                  alt={b.title}
+                  className="h-44 w-28 rounded-lg border border-border object-cover shadow-sm transition-transform hover:-translate-y-1"
+                />
+              </Link>
+            ))}
+          </Marquee>
+        </section>
+      ) : null}
 
       {/* How it works */}
       <section className="mx-auto max-w-6xl px-6 py-20">
         <Reveal>
           <p className="text-sm font-medium text-primary">How it works</p>
-          <h2 className="mt-1 font-serif text-3xl font-semibold sm:text-4xl">
-            Three simple steps
-          </h2>
+          <h2 className="mt-1 font-serif text-3xl font-semibold sm:text-4xl">Three simple steps</h2>
         </Reveal>
         <div className="mt-10 grid gap-6 sm:grid-cols-3">
           {STEPS.map((s, i) => (
             <Reveal key={s.n} delay={i * 0.08}>
-              <div className="h-full rounded-2xl border border-border bg-card p-6">
+              <div className="group h-full rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_18px_40px_-24px_var(--primary)]">
                 <div className="text-3xl">{s.icon}</div>
                 <p className="mt-4 font-serif text-2xl text-muted-foreground">0{s.n}</p>
                 <h3 className="mt-1 text-lg font-semibold">{s.title}</h3>
@@ -106,20 +125,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features */}
+      {/* Features — bento */}
       <section className="mx-auto max-w-6xl px-6 py-20">
         <Reveal>
-          <h2 className="font-serif text-3xl font-semibold sm:text-4xl">
-            One platform, everything books
-          </h2>
-          <p className="mt-2 max-w-xl text-muted-foreground">
-            From reading to writing, from discovery to community.
-          </p>
+          <h2 className="font-serif text-3xl font-semibold sm:text-4xl">One platform, everything books</h2>
+          <p className="mt-2 max-w-xl text-muted-foreground">From reading to writing, from discovery to community.</p>
         </Reveal>
         <div className="mt-10 grid gap-5 sm:grid-cols-3">
           {FEATURES.map((f, i) => (
             <Reveal key={f.title} delay={i * 0.06} className={f.span ?? ""}>
-              <div className="h-full rounded-2xl border border-border bg-card p-6 transition-colors hover:border-primary/40">
+              <div className="group relative h-full overflow-hidden rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_18px_40px_-24px_var(--primary)]">
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -right-16 -top-16 size-40 rounded-full bg-primary/10 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100"
+                />
                 <h3 className="text-lg font-semibold">{f.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{f.body}</p>
               </div>
@@ -141,17 +160,15 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section className="mx-auto max-w-6xl px-6 py-24 text-center">
-        <Reveal>
-          <h2 className="font-serif text-4xl font-semibold sm:text-5xl">
-            Your next chapter starts here
-          </h2>
-          <div className="mt-8">
-            <Button render={<Link href="/sign-up" />} nativeButton={false} size="lg">
-              Get started — it&apos;s free
-            </Button>
-          </div>
-        </Reveal>
+      <section className="px-6 py-24">
+        <AuroraBackground subtle className="mx-auto max-w-5xl rounded-3xl border border-border py-20 text-center">
+          <Reveal>
+            <h2 className="font-serif text-4xl font-semibold sm:text-5xl">Your next chapter starts here</h2>
+            <div className="mt-8 flex justify-center">
+              <GradientButton href="/sign-up">Get started — it&apos;s free</GradientButton>
+            </div>
+          </Reveal>
+        </AuroraBackground>
       </section>
 
       <SiteFooter />

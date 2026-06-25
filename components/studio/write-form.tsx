@@ -4,7 +4,6 @@ import { useActionState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { RichEditor } from "@/components/editor/rich-editor";
 import { createWrittenBook, type WriteFormState } from "@/lib/actions/written";
 
 const initial: WriteFormState = {};
@@ -62,15 +61,10 @@ export function WriteForm({ genres }: { genres: string[] }) {
         <input id="cover" name="cover" type="file" accept="image/*" className={fieldClass} />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label>Content</Label>
-        <RichEditor name="content" placeholder="Once upon a time…" />
-      </div>
-
       {state.error && <p className="text-sm text-destructive">{state.error}</p>}
 
       <Button type="submit" disabled={pending} size="lg" className="self-start">
-        {pending ? "Publishing…" : "Publish book"}
+        {pending ? "Creating…" : "Create & write chapters"}
       </Button>
     </form>
   );

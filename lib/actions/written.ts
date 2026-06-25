@@ -30,11 +30,9 @@ export async function createWrittenBook(
   const language = String(formData.get("language") ?? "en");
   const visibility = String(formData.get("visibility") ?? "public");
   const genres = formData.getAll("genres").map(String).filter(Boolean);
-  const html = String(formData.get("content") ?? "").trim();
   const cover = formData.get("cover") as File | null;
 
   if (title.length < 2) return { error: "Title is required." };
-  if (!html || html === "<p></p>") return { error: "Write some content first." };
 
   const slug = `${slugify(title)}-${crypto.randomUUID().slice(0, 6)}`;
 
@@ -74,11 +72,80 @@ export async function createWrittenBook(
     book_id: book.id,
     order: 0,
     title: "Chapter 1",
-    content: { html },
+    content: { html: "" },
   });
-  if (chErr) return { error: `Could not save content: ${chErr.message}` };
+  if (chErr) return { error: `Could not create first chapter: ${chErr.message}` };
 
   revalidatePath("/explore");
   revalidatePath("/studio");
-  redirect(`/book/${slug}`);
+  redirect(`/studio/write/${book.id}`);
+}
+
+export async function addChapter(bookId: string): Promise<{ id?: string; error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Sign in." };
+
+  const { data: last } = await supabase
+    .from("chapters")
+    .select("order")
+    .eq("book_id", bookId)
+    .order("order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const nextOrder = ((last?.order as number | undefined) ?? -1) + 1;
+
+  const { data, error } = await supabase
+    .from("chapters")
+    .insert({ book_id: bookId, order: nextOrder, title: `Chapter ${nextOrder + 1}`, content: { html: "" } })
+    .select("id")
+    .single();
+  if (error || !data) return { error: error?.message ?? "Could not add chapter." };
+  revalidatePath(`/studio/write/${bookId}`);
+  return { id: data.id };
+}
+
+export async function updateChapter(chapterId: string, html: string): Promise<{ ok?: boolean; error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Sign in." };
+  const { error } = await supabase.from("chapters").update({ content: { html } }).eq("id", chapterId);
+  if (error) return { error: error.message };
+  return { ok: true };
+}
+
+export async function renameChapter(chapterId: string, title: string, bookId: string): Promise<void> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+  await supabase.from("chapters").update({ title: title.slice(0, 120) }).eq("id", chapterId);
+  revalidatePath(`/studio/write/${bookId}`);
+}
+
+export async function deleteChapter(chapterId: string, bookId: string): Promise<void> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+  await supabase.from("chapters").delete().eq("id", chapterId);
+  revalidatePath(`/studio/write/${bookId}`);
+}
+
+export async function reorderChapters(bookId: string, orderedIds: string[]): Promise<void> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+  await Promise.all(
+    orderedIds.map((id, i) => supabase.from("chapters").update({ order: i }).eq("id", id))
+  );
+  revalidatePath(`/studio/write/${bookId}`);
 }
