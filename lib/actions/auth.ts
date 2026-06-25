@@ -55,6 +55,28 @@ export async function signUp(
   return { message: "Check your email to confirm your account, then sign in." };
 }
 
+export async function requestPasswordReset(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email) return { error: "Enter your email." };
+  const supabase = await createClient();
+  const origin = (await headers()).get("origin") ?? "";
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/auth/reset`,
+  });
+  if (error) return { error: error.message };
+  return { message: "If that email is registered, a reset link is on its way." };
+}
+
+export async function updatePassword(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const password = String(formData.get("password") ?? "");
+  if (password.length < 6) return { error: "Password must be at least 6 characters." };
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: error.message };
+  revalidatePath("/", "layout");
+  redirect("/dashboard");
+}
+
 export async function signInWithGoogle(): Promise<void> {
   const supabase = await createClient();
   const origin = (await headers()).get("origin") ?? "";

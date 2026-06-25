@@ -39,7 +39,14 @@ export function AuthForm({
         </div>
 
         <div className="flex flex-col gap-2">
-          <Label htmlFor="password">Password</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Password</Label>
+            {mode === "sign-in" ? (
+              <Link href="/auth/forgot" className="text-xs text-muted-foreground hover:text-primary">
+                Forgot?
+              </Link>
+            ) : null}
+          </div>
           <div className="relative">
             <Input
               id="password"
