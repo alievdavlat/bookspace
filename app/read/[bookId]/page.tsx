@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { BookReader } from "@/components/reader/book-reader";
+import { EpubReader } from "@/components/reader/epub-reader";
 import { ReadAloud } from "@/components/read-aloud";
 import { cleanHtml } from "@/lib/sanitize";
 
@@ -98,7 +99,8 @@ export default async function ReadPage({
     .eq("book_id", book.id)
     .maybeSingle();
 
-  const startPage = progress?.position ? parseInt(progress.position, 10) || 0 : 0;
+  const savedPosition = progress?.position ?? "";
+  const startPage = savedPosition ? parseInt(savedPosition, 10) || 0 : 0;
 
   if (!signed?.signedUrl) {
     return (
@@ -109,6 +111,19 @@ export default async function ReadPage({
           </Button>
         </div>
       </PageShell>
+    );
+  }
+
+  if (book.format === "epub") {
+    return (
+      <EpubReader
+        epubUrl={signed.signedUrl}
+        bookId={book.id}
+        userId={user.id}
+        title={book.title}
+        backSlug={book.slug}
+        startCfi={savedPosition && savedPosition.startsWith("epubcfi") ? savedPosition : undefined}
+      />
     );
   }
 

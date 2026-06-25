@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  Rss,
   Library,
   PenTool,
   Settings as SettingsIcon,
@@ -62,6 +63,7 @@ export function SidebarShell({
 
   const main: Item[] = [
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+    { href: "/feed", label: "Feed", icon: Rss },
     { href: "/library", label: "My library", icon: Library },
     { href: "/studio", label: "Studio", icon: PenTool },
     { href: "/settings", label: "Settings", icon: SettingsIcon },
