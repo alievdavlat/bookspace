@@ -49,6 +49,11 @@ export function BookReader({
   const bookRef = useRef<{
     pageFlip: () => { flipNext: () => void; flipPrev: () => void; flip: (p: number) => void };
   } | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else rootRef.current?.requestFullscreen?.();
+  };
 
   useEffect(() => {
     if (!userId) return;
@@ -160,7 +165,7 @@ export function BookReader({
   }
 
   return (
-    <div className="flex min-h-screen flex-col" style={{ background: t.bg, color: t.fg }}>
+    <div ref={rootRef} className="flex min-h-screen flex-col" style={{ background: t.bg, color: t.fg }}>
       <div className="flex items-center justify-between gap-4 px-5 py-3 text-sm">
         <Link href={`/book/${backSlug}`} className="opacity-80 hover:opacity-100">
           ← Back
@@ -197,6 +202,9 @@ export function BookReader({
               </>
             ) : null}
           </div>
+          <button onClick={toggleFullscreen} aria-label="Fullscreen" className="px-1 text-xs opacity-80 hover:opacity-100">
+            ⛶
+          </button>
           {(Object.keys(THEMES) as ThemeKey[]).map((k) => (
             <button
               key={k}
@@ -243,6 +251,14 @@ export function BookReader({
         </HTMLFlipBook>
       </div>
 
+      <div className="px-5 pt-2">
+        <div className="mx-auto h-1 w-full max-w-xl overflow-hidden rounded-full bg-black/10">
+          <div
+            className="h-full rounded-full bg-primary transition-all"
+            style={{ width: `${numPages ? Math.round(((current + 1) / numPages) * 100) : 0}%` }}
+          />
+        </div>
+      </div>
       <div className="flex items-center justify-center gap-6 px-5 py-4 text-sm">
         <button onClick={() => bookRef.current?.pageFlip().flipPrev()} className="rounded-md px-3 py-1 opacity-80 hover:opacity-100">
           ‹ Prev

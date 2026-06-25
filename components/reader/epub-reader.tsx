@@ -13,15 +13,17 @@ const THEMES: Record<ThemeKey, { bg: string; fg: string; page: string }> = {
 };
 
 type Loc = { start?: { cfi?: string; percentage?: number } };
+type TocItem = { label: string; href: string };
 type Rendition = {
   display: (target?: string) => Promise<unknown>;
   next: () => void;
   prev: () => void;
   on: (event: string, cb: (loc: Loc) => void) => void;
-  themes: { override: (key: string, value: string) => void };
+  themes: { override: (key: string, value: string) => void; fontSize: (value: string) => void };
 };
 type EpubBook = {
   renderTo: (el: HTMLElement, opts: Record<string, unknown>) => Rendition;
+  loaded: { navigation: Promise<{ toc: TocItem[] }> };
   destroy: () => void;
 };
 
@@ -40,10 +42,14 @@ export function EpubReader({
   backSlug: string;
   startCfi?: string;
 }) {
+  const rootRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<HTMLDivElement>(null);
   const renditionRef = useRef<Rendition | null>(null);
   const [theme, setTheme] = useState<ThemeKey>("sepia");
   const [ready, setReady] = useState(false);
+  const [toc, setToc] = useState<TocItem[]>([]);
+  const [tocOpen, setTocOpen] = useState(false);
+  const [fontPct, setFontPct] = useState(100);
 
   useEffect(() => {
     if (!viewerRef.current) return;
@@ -56,6 +62,7 @@ export function EpubReader({
     });
     renditionRef.current = rendition;
     rendition.display(startCfi || undefined).then(() => setReady(true));
+    book.loaded.navigation.then((nav) => setToc(nav.toc ?? [])).catch(() => {});
 
     rendition.on("relocated", (loc: Loc) => {
       const cfi = loc?.start?.cfi;
@@ -91,18 +98,61 @@ export function EpubReader({
     if (!r || !ready) return;
     r.themes.override("color", THEMES[theme].fg);
     r.themes.override("background", THEMES[theme].page);
-  }, [theme, ready]);
+    r.themes.fontSize(`${fontPct}%`);
+  }, [theme, ready, fontPct]);
 
   const t = THEMES[theme];
 
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else rootRef.current?.requestFullscreen?.();
+  };
+
   return (
-    <div className="flex h-screen flex-col" style={{ background: t.bg, color: t.fg }}>
+    <div ref={rootRef} className="flex h-screen flex-col" style={{ background: t.bg, color: t.fg }}>
       <div className="flex items-center justify-between gap-4 px-5 py-3 text-sm">
         <Link href={`/book/${backSlug}`} className="opacity-80 hover:opacity-100">
           ← Back
         </Link>
         <span className="line-clamp-1 font-serif text-base">{title}</span>
         <div className="flex items-center gap-2">
+          {/* Table of contents */}
+          {toc.length > 0 ? (
+            <div className="relative">
+              <button onClick={() => setTocOpen((v) => !v)} className="rounded px-2 py-1 text-xs opacity-80 hover:opacity-100">
+                Contents
+              </button>
+              {tocOpen ? (
+                <>
+                  <div className="fixed inset-0 z-20" onClick={() => setTocOpen(false)} />
+                  <div className="absolute right-0 z-30 mt-1 max-h-80 w-64 overflow-y-auto rounded-lg border border-black/10 bg-white p-1 text-sm text-[#2b2118] shadow-xl">
+                    {toc.map((it, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          renditionRef.current?.display(it.href);
+                          setTocOpen(false);
+                        }}
+                        className="block w-full truncate rounded px-2 py-1.5 text-left hover:bg-black/5"
+                      >
+                        {it.label.trim()}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : null}
+            </div>
+          ) : null}
+          {/* Font size */}
+          <button onClick={() => setFontPct((p) => Math.max(70, p - 10))} aria-label="Smaller text" className="px-1.5 text-xs opacity-80 hover:opacity-100">
+            A-
+          </button>
+          <button onClick={() => setFontPct((p) => Math.min(180, p + 10))} aria-label="Larger text" className="px-1.5 text-sm opacity-80 hover:opacity-100">
+            A+
+          </button>
+          <button onClick={toggleFullscreen} aria-label="Fullscreen" className="px-1.5 text-xs opacity-80 hover:opacity-100">
+            ⛶
+          </button>
           {(Object.keys(THEMES) as ThemeKey[]).map((k) => (
             <button
               key={k}
