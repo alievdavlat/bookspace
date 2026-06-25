@@ -89,14 +89,15 @@ export async function bulkUploadBooks(_prev: BulkState, formData: FormData): Pro
 
   let ok = 0;
   let skipped = 0;
-  for (const file of files) {
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
     const ext = (file.name.split(".").pop() ?? "").toLowerCase();
     if (ext !== "pdf" && ext !== "epub") {
       skipped++;
       continue;
     }
-    const base = file.name.replace(/\.[^.]+$/, "");
-    const title = base.replace(/[-_]+/g, " ").trim() || "Untitled";
+    const provided = String(formData.get(`title_${i}`) ?? "").trim();
+    const title = provided || file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim() || "Untitled";
     const slug = `${slugify(title)}-${crypto.randomUUID().slice(0, 6)}`;
     const filePath = `${user.id}/${slug}.${ext}`;
 
