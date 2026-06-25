@@ -155,3 +155,23 @@
 }
 .bs-aurora { animation: bsAurora 18s ease-in-out infinite; }
 .bs-float { animation: bsFloat 6s ease-in-out infinite; }
+
+/* Aceternity-style aurora blobs */
+@keyframes bsBlob1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(12%, 8%) scale(1.15); } }
+@keyframes bsBlob2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-10%, 10%) scale(1.1); } }
+@keyframes bsBlob3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(8%, -10%) scale(1.2); } }
+.bs-blob-1 { animation: bsBlob1 16s ease-in-out infinite; }
+.bs-blob-2 { animation: bsBlob2 20s ease-in-out infinite; }
+.bs-blob-3 { animation: bsBlob3 24s ease-in-out infinite; }
+
+/* Infinite marquee */
+@keyframes bsMarquee { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+.bs-marquee { animation: bsMarquee var(--bs-marquee-dur, 40s) linear infinite; }
+
+/* Animated gradient (CTA, borders) */
+@keyframes bsGradient { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+.bs-gradient { background-size: 200% 200%; animation: bsGradient 6s ease infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bs-aurora, .bs-float, .bs-blob-1, .bs-blob-2, .bs-blob-3, .bs-marquee, .bs-gradient { animation: none; }
+}

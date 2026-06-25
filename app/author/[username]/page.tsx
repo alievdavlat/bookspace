@@ -6,22 +6,13 @@ import { SiteFooter } from "@/components/site-footer";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { FollowButton } from "@/components/author/follow-button";
 import { ProfileTabs, type ProfilePost } from "@/components/profile/profile-tabs";
+import { AuroraBackground } from "@/components/aceternity/aurora-background";
 import type { BookWithAuthor } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Profile · Bookspace" };
 
 const BOOK_COLS =
   "id, author_id, title, slug, author_name, cover_url, genres, type, format, status, visibility, page_count, views, created_at, author:profiles!books_author_id_fkey(username, display_name)";
-
-// Deterministic warm banner gradient from the username.
-function bannerStyle(seed: string) {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) % 360;
-  const h2 = (h + 40) % 360;
-  return {
-    backgroundImage: `linear-gradient(120deg, hsl(${h} 55% 32%), hsl(${h2} 50% 22%))`,
-  };
-}
 
 function initials(name: string) {
   return name.trim().slice(0, 2).toUpperCase();
@@ -87,7 +78,9 @@ export default async function AuthorPage({
       <SiteHeader />
       <main className="flex-1">
         {/* Banner */}
-        <div className="h-40 w-full sm:h-52" style={bannerStyle(profile.username || username)} />
+        <AuroraBackground
+          className="h-40 w-full bg-[linear-gradient(120deg,#1e3a8a,#2563eb)] text-white sm:h-52"
+        />
 
         <div className="mx-auto w-full max-w-6xl px-6">
           {/* Header row */}
