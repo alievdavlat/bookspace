@@ -3,9 +3,10 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { FocusBookCards } from "@/components/aceternity/focus-cards";
+import { ExploreResults } from "@/components/explore/explore-results";
 import { ExploreSidebar } from "@/components/explore/explore-sidebar";
 import { ActiveFilters } from "@/components/explore/active-filters";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { listGenreNames } from "@/lib/actions/genres";
 import { languageName } from "@/lib/languages";
 import type { BookWithAuthor } from "@/lib/types";
@@ -82,11 +83,14 @@ export default async function ExplorePage({
         </p>
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[250px_1fr]">
-          {/* Filters */}
+          {/* Filters — own scroll container so tall filter lists scroll
+              independently of the book grid (sticky on desktop). */}
           <div className="lg:sticky lg:top-24 lg:self-start">
-            <Suspense fallback={<div className="text-sm text-muted-foreground">Loading filters…</div>}>
-              <ExploreSidebar genres={genreNames} languages={presentLangs} />
-            </Suspense>
+            <ScrollArea className="lg:h-[calc(100dvh-7rem)] lg:pr-3">
+              <Suspense fallback={<div className="text-sm text-muted-foreground">Loading filters…</div>}>
+                <ExploreSidebar genres={genreNames} languages={presentLangs} />
+              </Suspense>
+            </ScrollArea>
           </div>
 
           {/* Results */}
@@ -103,7 +107,7 @@ export default async function ExplorePage({
                 </p>
               </div>
             ) : (
-              <FocusBookCards books={books} />
+              <ExploreResults books={books} />
             )}
           </div>
         </div>
